@@ -7,15 +7,16 @@ var BOOKING_HEADERS = [
   "Shipper Name", "Shipper Email", "Shipper Phone", "Shipper Address", "Shipper KYC Type",
   "Consignee Name", "Consignee Email ID", "Consignee Phone", "Consignee Address", "Consignee KYC Type",
   "Preferred Delivery Date",
-  "Dispatch Date", "MAWB No", "India Status",
-  "Flight Date", "Airline Type", "Expected Arrival Date Time", "Sahib Khan Status",
+  "Dispatch Date", "MAWB No", "Assigned By Hemlata", "Flight Date", "Airline Type", "Expected Arrival Date Time", "India Status",
+  "Approved By", "Approver Phone No", "Approver Email", "Approver Status",
   "Arrival Date", "Custom Date", "Dispatch To Consignee Date", "CS Status"
 ];
 
 var USER_HEADERS = ["Email", "Password", "Role", "Name"];
 var DEFAULT_USERS = [
   ["india@quickshipnow.com", "india123", "india", "India Office"],
-  ["sahib@quickshipnow.com", "sahib123", "sahib", "Sahib Khan"],
+  ["sahib@quickshipnow.com", "sahib123", "approver", "Approver"],
+  ["approver@quickshipnow.com", "approver123", "approver", "Approver"],
   ["cs@quickshipnow.com", "cs123", "cs", "CS Team"]
 ];
 
@@ -111,7 +112,8 @@ function loginOffice(email, password) {
       var rowEmail = String(rows[i][0] || "").trim().toLowerCase();
       var rowPass = String(rows[i][1] || "").trim();
       var role = String(rows[i][2] || "").trim().toLowerCase();
-      if (rowEmail === em && rowPass === pass && (role === "india" || role === "sahib" || role === "cs")) {
+      if (role === "sahib") role = "approver";
+      if (rowEmail === em && rowPass === pass && (role === "india" || role === "approver" || role === "cs")) {
         return {
           success: true,
           user: {
@@ -161,7 +163,7 @@ function submitPublicForm(fields) {
     });
 
     row[bci("India Status")] = "Pending";
-    row[bci("Sahib Khan Status")] = "Pending";
+    row[bci("Approver Status")] = "Pending";
     row[bci("CS Status")] = "Pending";
 
     sh.appendRow(row);
@@ -229,7 +231,8 @@ function saveOfficeSection(payload) {
     var rid = String(payload.recordId || "").trim();
     var fields = payload.fields || {};
 
-    if (section !== "india" && section !== "sahib" && section !== "cs") {
+    if (section === "sahib") section = "approver";
+    if (section !== "india" && section !== "approver" && section !== "cs") {
       return { success: false, error: "Invalid section." };
     }
     if (!rid) {
@@ -245,12 +248,16 @@ function saveOfficeSection(payload) {
     if (section === "india") {
       sh.getRange(rowNum, bci("Dispatch Date") + 1).setValue(String(fields["Dispatch Date"] || "").trim());
       sh.getRange(rowNum, bci("MAWB No") + 1).setValue(String(fields["MAWB No"] || "").trim());
-      sh.getRange(rowNum, bci("India Status") + 1).setValue("Submitted");
-    } else if (section === "sahib") {
+      sh.getRange(rowNum, bci("Assigned By Hemlata") + 1).setValue(String(fields["Assigned By Hemlata"] || "").trim());
       sh.getRange(rowNum, bci("Flight Date") + 1).setValue(String(fields["Flight Date"] || "").trim());
       sh.getRange(rowNum, bci("Airline Type") + 1).setValue(String(fields["Airline Type"] || "").trim());
       sh.getRange(rowNum, bci("Expected Arrival Date Time") + 1).setValue(String(fields["Expected Arrival Date Time"] || "").trim());
-      sh.getRange(rowNum, bci("Sahib Khan Status") + 1).setValue("Submitted");
+      sh.getRange(rowNum, bci("India Status") + 1).setValue("Submitted");
+    } else if (section === "approver") {
+      sh.getRange(rowNum, bci("Approved By") + 1).setValue(String(fields["Approved By"] || "").trim());
+      sh.getRange(rowNum, bci("Approver Phone No") + 1).setValue(String(fields["Approver Phone No"] || "").trim());
+      sh.getRange(rowNum, bci("Approver Email") + 1).setValue(String(fields["Approver Email"] || "").trim());
+      sh.getRange(rowNum, bci("Approver Status") + 1).setValue("Submitted");
     } else {
       sh.getRange(rowNum, bci("Arrival Date") + 1).setValue(String(fields["Arrival Date"] || "").trim());
       sh.getRange(rowNum, bci("Custom Date") + 1).setValue(String(fields["Custom Date"] || "").trim());
@@ -366,6 +373,10 @@ function syncBookingHeaders_(sh) {
     BOOKING_HEADERS.forEach(function(header, newIdx) {
       var oldIdx = currentHeaders.indexOf(header);
       if (oldIdx >= 0) nextRow[newIdx] = data[r][oldIdx];
+      if (oldIdx < 0 && header === "Approver Status") {
+        var oldStatusIdx = currentHeaders.indexOf("Sahib Khan Status");
+        if (oldStatusIdx >= 0) nextRow[newIdx] = data[r][oldStatusIdx];
+      }
     });
     rebuilt.push(nextRow);
   }
