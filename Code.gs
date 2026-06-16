@@ -3,10 +3,10 @@ var USERS_SHEET = "WorkflowUsers";
 
 var BOOKING_HEADERS = [
   "Record ID", "Created At", "Last Updated",
-  "Booking By", "Your Email Address", "Booking Date",
-  "Shipper Name", "Shipper Email", "Shipper Phone", "Shipper Address", "Shipper KYC Type",
-  "Consignee Name", "Consignee Email ID", "Consignee Phone", "Consignee Address", "Consignee KYC Type",
-  "Preferred Delivery Date",
+  "Pickup Type", "Billing Party Name", "Customer Name",
+  "Shipper Phone No", "Consignee Phone No", "Delivery Address", "Pickup Address",
+  "Customer Phone Number", "Customer Email ID", "Weight in KG", "Boxes in Number",
+  "Item Package Description", "Preferred Pickup Date", "Special Instructions",
   "Dispatch Date", "MAWB No", "Assigned By Hemlata", "Flight Date", "Airline Type", "Expected Arrival Date Time", "India Status",
   "Approved By", "Approver Phone No", "Approver Email", "Approver Status",
   "Arrival Date", "Custom Date", "Dispatch To Consignee Date", "CS Status"
@@ -134,10 +134,15 @@ function submitPublicForm(fields) {
   try {
     fields = fields || {};
     var required = [
-      "Booking By", "Your Email Address", "Booking Date",
-      "Shipper Name", "Shipper Email", "Shipper Phone", "Shipper Address", "Shipper KYC Type",
-      "Consignee Name", "Consignee Email ID", "Consignee Phone", "Consignee Address", "Consignee KYC Type",
-      "Preferred Delivery Date"
+      "Pickup Type",
+      "Shipper Phone No",
+      "Consignee Phone No",
+      "Delivery Address",
+      "Pickup Address",
+      "Customer Phone Number",
+      "Customer Email ID",
+      "Preferred Pickup Date",
+      "Special Instructions"
     ];
 
     for (var i = 0; i < required.length; i++) {
@@ -274,7 +279,7 @@ function saveOfficeSection(payload) {
 }
 
 function sendSubmissionEmail_(fields, recordId, submittedAt) {
-  var to = String(fields["Your Email Address"] || "").trim();
+  var to = String(fields["Customer Email ID"] || "").trim();
   if (!to) return { sent: false, error: "Recipient email is missing." };
 
   var subject = "Booking Submitted - " + recordId;
@@ -285,20 +290,20 @@ function sendSubmissionEmail_(fields, recordId, submittedAt) {
     "Submitted At: " + submittedAt,
     "",
     "Form Details:",
-    "Booking By: " + String(fields["Booking By"] || ""),
-    "Your Email Address: " + to,
-    "Booking Date: " + String(fields["Booking Date"] || ""),
-    "Shipper Name: " + String(fields["Shipper Name"] || ""),
-    "Shipper Email: " + String(fields["Shipper Email"] || ""),
-    "Shipper Phone: " + String(fields["Shipper Phone"] || ""),
-    "Shipper Address: " + String(fields["Shipper Address"] || ""),
-    "Shipper KYC Type: " + String(fields["Shipper KYC Type"] || ""),
-    "Consignee Name: " + String(fields["Consignee Name"] || ""),
-    "Consignee Email ID: " + String(fields["Consignee Email ID"] || ""),
-    "Consignee Phone: " + String(fields["Consignee Phone"] || ""),
-    "Consignee Address: " + String(fields["Consignee Address"] || ""),
-    "Consignee KYC Type: " + String(fields["Consignee KYC Type"] || ""),
-    "Preferred Delivery Date: " + String(fields["Preferred Delivery Date"] || "")
+    "Pickup Type: " + String(fields["Pickup Type"] || ""),
+    "Billing Party Name: " + String(fields["Billing Party Name"] || ""),
+    "Customer Name: " + String(fields["Customer Name"] || ""),
+    "Shipper Phone No: " + String(fields["Shipper Phone No"] || ""),
+    "Consignee Phone No: " + String(fields["Consignee Phone No"] || ""),
+    "Delivery Address: " + String(fields["Delivery Address"] || ""),
+    "Pickup Address: " + String(fields["Pickup Address"] || ""),
+    "Customer Phone Number: " + String(fields["Customer Phone Number"] || ""),
+    "Customer Email ID: " + to,
+    "Weight in KG: " + String(fields["Weight in KG"] || ""),
+    "Boxes in Number: " + String(fields["Boxes in Number"] || ""),
+    "Item Package Description: " + String(fields["Item Package Description"] || ""),
+    "Preferred Pickup Date: " + String(fields["Preferred Pickup Date"] || ""),
+    "Special Instructions: " + String(fields["Special Instructions"] || "")
   ];
 
   try {
@@ -368,14 +373,29 @@ function syncBookingHeaders_(sh) {
   if (alreadySynced) return;
 
   var rebuilt = [BOOKING_HEADERS.slice()];
+  var legacyHeaderMap = {
+    "Customer Name": ["Booking By", "Shipper Name"],
+    "Customer Email ID": ["Your Email Address", "Consignee Email ID", "Shipper Email"],
+    "Shipper Phone No": ["Shipper Phone"],
+    "Consignee Phone No": ["Consignee Phone"],
+    "Delivery Address": ["Consignee Address"],
+    "Pickup Address": ["Shipper Address"],
+    "Preferred Pickup Date": ["Preferred Delivery Date", "Booking Date"],
+    "Approver Status": ["Sahib Khan Status"]
+  };
   for (var r = 1; r < data.length; r++) {
     var nextRow = new Array(BOOKING_HEADERS.length).fill("");
     BOOKING_HEADERS.forEach(function(header, newIdx) {
       var oldIdx = currentHeaders.indexOf(header);
       if (oldIdx >= 0) nextRow[newIdx] = data[r][oldIdx];
-      if (oldIdx < 0 && header === "Approver Status") {
-        var oldStatusIdx = currentHeaders.indexOf("Sahib Khan Status");
-        if (oldStatusIdx >= 0) nextRow[newIdx] = data[r][oldStatusIdx];
+      if (oldIdx < 0 && legacyHeaderMap[header]) {
+        for (var m = 0; m < legacyHeaderMap[header].length; m++) {
+          var legacyIdx = currentHeaders.indexOf(legacyHeaderMap[header][m]);
+          if (legacyIdx >= 0 && data[r][legacyIdx] !== "") {
+            nextRow[newIdx] = data[r][legacyIdx];
+            break;
+          }
+        }
       }
     });
     rebuilt.push(nextRow);
