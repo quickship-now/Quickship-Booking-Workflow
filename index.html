@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quickship Booking Workflow</title>
+<script>
+window.WORKFLOW_API_URL = "";
+</script>
+<script src="config.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#1c67d5;color:#e5e7eb}
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+.wrap{max-width:1100px;margin:0 auto;padding:18px}
+.topbar{height:58px;background:#FFC107;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.brand{font-weight:700;color:#000000}
+.actions{display:flex;gap:8px;align-items:center}
+.btn{border:0;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer}
+.btn-primary{background:#f59e0b;color:#111827}
+.btn-ghost{background:#1f2937;color:#e5e7eb}
+.btn-outline{background:transparent;color:#00000;border:1px solid #475569}
+.card{background:#012e8e;border:1px solid #334155;border-radius:12px;padding:16px}
+.title{margin:0 0 6px 0;color:#f8fafc}
+.sub{margin:0;color:#94a3b8;font-size:13px}
+.err{display:none;background:#7f1d1d;color:#fecaca;border:1px solid #991b1b;padding:9px 10px;border-radius:8px;font-size:13px;margin-bottom:12px}
+.err.show{display:block}
+.ok{display:none;background:#14532d;color:#dcfce7;border:1px solid #166534;padding:9px 10px;border-radius:8px;font-size:13px;margin-bottom:12px}
+.ok.show{display:block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:12px;color:#cbd5e1}
+.f input,.f select,.f textarea{width:100%;padding:9px 10px;border:1px solid #334155;border-radius:8px;background:#020617;color:#e5e7eb;font:inherit}
+.f textarea{min-height:72px;resize:vertical}
+.req{color:#fca5a5}
+.tbl-wrap{overflow:auto;border:1px solid #334155;border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:980px;background:#020617}
+thead th{font-size:12px;color:#93c5fd;padding:8px;text-align:left;border-bottom:1px solid #334155}
+tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293b;vertical-align:top}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.done{background:#14532d;color:#86efac}
+.pending{background:#78350f;color:#fcd34d}
+.code{font-family:Consolas,monospace;font-size:12px;color:#93c5fd}
+.userchip{display:flex;gap:8px;align-items:center;background:#1e293b;border:1px solid #334155;border-radius:999px;padding:5px 10px}
+.avatar{width:24px;height:24px;border-radius:50%;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;font-size:11px}
+.loader{position:fixed;inset:0;background:rgba(2,6,23,0.75);display:flex;align-items:center;justify-content:center;z-index:999}
+.loader.hide{display:none}
+.loader-card{background:#111827;border:1px solid #334155;border-radius:12px;padding:16px 18px;min-width:220px}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:8px;margin-top:10px}
+.kv div{font-size:13px}
+.kv .k{color:#94a3b8}
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .kv{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="gloader" class="loader hide"><div class="loader-card"><div id="gloaderTxt">Loading...</div></div></div>
+
+<div id="pgPublic" class="page">
+  <header class="topbar">
+    <div class="brand">Quickship Booking Workflow</div>
+    <div class="actions">
+      <button class="btn btn-outline" onclick="openOfficeLogin()">Office Login</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="card">
+      <h2 class="title">Customer and Canada Office Form</h2>
+      <p class="sub" style="margin-bottom:14px">No login required. On submit, details will be sent to Your Email Address.</p>
+      <div id="pubErr" class="err"></div>
+      <div id="pubOk" class="ok"></div>
+
+      <div class="grid">
+        <div class="f"><label>Booking By <span class="req">*</span></label><input id="pf_Booking_By" type="text"></div>
+        <div class="f"><label>Your Email Address <span class="req">*</span></label><input id="pf_Your_Email_Address" type="email"></div>
+        <div class="f"><label>Booking Date <span class="req">*</span></label><input id="pf_Booking_Date" type="date"></div>
+        <div class="f"><label>Shipper Name <span class="req">*</span></label><input id="pf_Shipper_Name" type="text"></div>
+        <div class="f"><label>Shipper Email <span class="req">*</span></label><input id="pf_Shipper_Email" type="email"></div>
+        <div class="f"><label>Shipper Phone <span class="req">*</span></label><input id="pf_Shipper_Phone" type="text"></div>
+        <div class="f"><label>Shipper Address <span class="req">*</span></label><textarea id="pf_Shipper_Address"></textarea></div>
+        <div class="f"><label>Shipper KYC Type <span class="req">*</span></label>
+          <select id="pf_Shipper_KYC_Type">
+            <option value="">Select</option>
+            <option value="Passport">Passport</option>
+            <option value="Driving License">Driving License</option>
+          </select>
+        </div>
+        <div class="f"><label>Consignee Name <span class="req">*</span></label><input id="pf_Consignee_Name" type="text"></div>
+        <div class="f"><label>Consignee Email ID <span class="req">*</span></label><input id="pf_Consignee_Email_ID" type="email"></div>
+        <div class="f"><label>Consignee Phone <span class="req">*</span></label><input id="pf_Consignee_Phone" type="text"></div>
+        <div class="f"><label>Consignee Address <span class="req">*</span></label><textarea id="pf_Consignee_Address"></textarea></div>
+        <div class="f"><label>Consignee KYC Type <span class="req">*</span></label>
+          <select id="pf_Consignee_KYC_Type">
+            <option value="">Select</option>
+            <option value="Passport">Passport</option>
+            <option value="Driving License">Driving License</option>
+          </select>
+        </div>
+        <div class="f"><label>Preferred Delivery Date <span class="req">*</span></label><input id="pf_Preferred_Delivery_Date" type="date"></div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="pubSubmitBtn" onclick="submitPublicFormUI()">Submit Form</button>
+        <button class="btn btn-ghost" onclick="resetPublicForm()">Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pgLogin" class="page">
+  <header class="topbar">
+    <div class="brand">Office Login</div>
+    <div class="actions"><button class="btn btn-ghost" onclick="openPublicPage()">Back to Public Form</button></div>
+  </header>
+  <div class="wrap" style="max-width:520px">
+    <div class="card">
+      <h2 class="title">India Office / Sahib Khan / CS Team Login</h2>
+      <p class="sub" style="margin-bottom:14px">Use office credentials to update existing entries.</p>
+      <div id="loginErr" class="err"></div>
+      <div class="f"><label>Email</label><input id="loginEmail" type="email"></div>
+      <div class="f"><label>Password</label><input id="loginPass" type="password"></div>
+      <div style="margin-top:12px"><button id="loginBtn" class="btn btn-primary" onclick="doOfficeLogin()">Sign In</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="pgOfficeDash" class="page">
+  <header class="topbar">
+    <div class="brand">Office Dashboard</div>
+    <div class="actions">
+      <div class="userchip"><div class="avatar" id="uAv">U</div><div id="uName" style="font-size:12px"></div></div>
+      <button class="btn btn-ghost" onclick="loadOfficeDashboard()">Refresh</button>
+      <button class="btn btn-outline" onclick="doOfficeLogout()">Logout</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="card" style="margin-bottom:12px">
+      <h2 class="title" id="dashTitle">Dashboard</h2>
+      <p class="sub" id="dashSub"></p>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap">
+        <div style="font-weight:700">All Entries</div>
+        <div id="dashCount" class="sub"></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Record ID</th>
+              <th>Booking By</th>
+              <th>Booking Date</th>
+              <th>Shipper</th>
+              <th>Consignee</th>
+              <th>Preferred Delivery Date</th>
+              <th>India Status</th>
+              <th>Sahib Khan Status</th>
+              <th>CS Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="dashBody"><tr><td colspan="11">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pgOfficeForm" class="page">
+  <header class="topbar">
+    <div class="brand">Office Update Form</div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="goBackDashboard()">Back to Dashboard</button>
+      <button class="btn btn-outline" onclick="doOfficeLogout()">Logout</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="card" style="margin-bottom:12px">
+      <h2 class="title" id="ofTitle">Update</h2>
+      <p class="sub" id="ofSub"></p>
+      <div class="kv" id="ofMeta"></div>
+    </div>
+    <div class="card">
+      <div id="ofErr" class="err"></div>
+      <div id="ofFields" class="grid"></div>
+      <div style="margin-top:14px"><button id="ofSaveBtn" class="btn btn-primary" onclick="saveOfficeForm()">Save Updates</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _INIT = {};
+try {
+  var _params = new URLSearchParams(window.location.search);
+  _INIT = {
+    page: _params.get('page') || 'public',
+    recordId: _params.get('recordId') || '',
+    data: {}
+  };
+} catch (e) {
+  _INIT = { page: 'public', recordId: '', data: {} };
+}
+
+var PUBLIC_FIELDS = [
+  'Booking By',
+  'Your Email Address',
+  'Booking Date',
+  'Shipper Name',
+  'Shipper Email',
+  'Shipper Phone',
+  'Shipper Address',
+  'Shipper KYC Type',
+  'Consignee Name',
+  'Consignee Email ID',
+  'Consignee Phone',
+  'Consignee Address',
+  'Consignee KYC Type',
+  'Preferred Delivery Date'
+];
+
+var OFFICE_CFG = {
+  india: {
+    title: 'India Office Update',
+    fields: [
+      {k: 'Dispatch Date', t: 'date', r: true},
+      {k: 'MAWB No', t: 'text', r: true}
+    ]
+  },
+  sahib: {
+    title: 'Sahib Khan Update',
+    fields: [
+      {k: 'Flight Date', t: 'date', r: true},
+      {k: 'Airline Type', t: 'select', r: true, opts: ['Air India', 'Qatar Airways', 'Etihad', 'Air Canada', 'Other']},
+      {k: 'Expected Arrival Date Time', t: 'datetime-local', r: true}
+    ]
+  },
+  cs: {
+    title: 'CS Team Update',
+    fields: [
+      {k: 'Arrival Date', t: 'date', r: true},
+      {k: 'Custom Date', t: 'date', r: true},
+      {k: 'Dispatch To Consignee Date', t: 'date', r: true}
+    ]
+  }
+};
+
+var STATE = {
+  user: null,
+  page: String(_INIT.page || 'public').toLowerCase(),
+  recordId: String(_INIT.recordId || ''),
+  formData: _INIT.data || {},
+  rows: []
+};
+
+window.addEventListener('load', function(){
+  try {
+    var u = sessionStorage.getItem('workflowUser');
+    if (u) STATE.user = JSON.parse(u);
+  } catch (e) {}
+
+  if (STATE.user) {
+    if (STATE.page === 'form' && STATE.recordId) {
+      showPage('pgOfficeForm');
+      loadOfficeRecordAndRender(STATE.recordId);
+    } else {
+      showPage('pgOfficeDash');
+      renderUserChip();
+      loadOfficeDashboard();
+    }
+  } else {
+    if (STATE.page === 'login') showPage('pgLogin');
+    else showPage('pgPublic');
+  }
+});
+
+function showPage(id){
+  ['pgPublic','pgLogin','pgOfficeDash','pgOfficeForm'].forEach(function(p){
+    var el = document.getElementById(p);
+    if (el) el.classList.remove('active');
+  });
+  var t = document.getElementById(id);
+  if (t) t.classList.add('active');
+}
+
+function openPublicPage(){
+  showPage('pgPublic');
+}
+
+function openOfficeLogin(){
+  showPage('pgLogin');
+  var err = document.getElementById('loginErr');
+  err.classList.remove('show');
+  err.textContent = '';
+}
+
+function fieldIdFromKey(key){
+  return 'pf_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
+function getPublicFieldsFromForm(){
+  var data = {};
+  PUBLIC_FIELDS.forEach(function(k){
+    var el = document.getElementById(fieldIdFromKey(k));
+    data[k] = el ? String(el.value || '').trim() : '';
+  });
+  return data;
+}
+
+function resetPublicForm(){
+  PUBLIC_FIELDS.forEach(function(k){
+    var el = document.getElementById(fieldIdFromKey(k));
+    if (el) el.value = '';
+  });
+  hidePublicMessages();
+}
+
+function hidePublicMessages(){
+  var ok = document.getElementById('pubOk');
+  var err = document.getElementById('pubErr');
+  ok.classList.remove('show'); ok.textContent = '';
+  err.classList.remove('show'); err.textContent = '';
+}
+
+function submitPublicFormUI(){
+  hidePublicMessages();
+  var data = getPublicFieldsFromForm();
+  var btn = document.getElementById('pubSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  scriptRun('submitPublicForm', [data], function(res){
+    btn.disabled = false;
+    btn.textContent = 'Submit Form';
+    if (!res || !res.success) {
+      var msg = (res && res.error) ? res.error : 'Submission failed.';
+      var err = document.getElementById('pubErr');
+      err.textContent = msg;
+      err.classList.add('show');
+      return;
+    }
+
+    var ok = document.getElementById('pubOk');
+    var note = 'Form submitted successfully. Record ID: ' + res.recordId + '.';
+    if (res.emailSent) note += ' Email sent to Your Email Address.';
+    else if (res.emailError) note += ' Entry saved, but email failed: ' + res.emailError;
+    ok.textContent = note;
+    ok.classList.add('show');
+    resetPublicForm();
+    ok.classList.add('show');
+    ok.textContent = note;
+  }, function(e){
+    btn.disabled = false;
+    btn.textContent = 'Submit Form';
+    var err = document.getElementById('pubErr');
+    err.textContent = 'Error: ' + (e.message || e);
+    err.classList.add('show');
+  });
+}
+
+function doOfficeLogin(){
+  var email = String(document.getElementById('loginEmail').value || '').trim();
+  var pass = String(document.getElementById('loginPass').value || '').trim();
+  var err = document.getElementById('loginErr');
+  err.classList.remove('show');
+  err.textContent = '';
+
+  if (!email || !pass) {
+    err.textContent = 'Please enter email and password.';
+    err.classList.add('show');
+    return;
+  }
+
+  var btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+
+  scriptRun('loginOffice', [email, pass], function(res){
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+
+    if (!res || !res.success) {
+      err.textContent = (res && res.error) ? res.error : 'Login failed.';
+      err.classList.add('show');
+      return;
+    }
+
+    STATE.user = res.user;
+    try { sessionStorage.setItem('workflowUser', JSON.stringify(res.user)); } catch (e) {}
+
+    showPage('pgOfficeDash');
+    renderUserChip();
+    loadOfficeDashboard();
+  }, function(e){
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+    err.textContent = 'Error: ' + (e.message || e);
+    err.classList.add('show');
+  });
+}
+
+function doOfficeLogout(){
+  STATE.user = null;
+  STATE.recordId = '';
+  STATE.formData = {};
+  try { sessionStorage.removeItem('workflowUser'); } catch (e) {}
+  showPage('pgPublic');
+}
+
+function renderUserChip(){
+  var u = STATE.user || {name: 'Office', role: ''};
+  document.getElementById('uAv').textContent = String(u.name || 'O').charAt(0).toUpperCase();
+  document.getElementById('uName').textContent = (u.name || 'Office') + ' (' + String(u.role || '').toUpperCase() + ')';
+  document.getElementById('dashTitle').textContent = String(u.role || '').toUpperCase() + ' Office Dashboard';
+  document.getElementById('dashSub').textContent = 'Update and edit existing booking entries.';
+}
+
+function loadOfficeDashboard(){
+  gloader(true, 'Loading dashboard...');
+  scriptRun('getOfficeDashboard', [], function(res){
+    gloader(false);
+    if (!res || !res.success) {
+      alert((res && res.error) ? res.error : 'Failed to load dashboard.');
+      return;
+    }
+    STATE.rows = res.rows || [];
+    renderOfficeRows(STATE.rows);
+  }, function(e){
+    gloader(false);
+    alert('Error: ' + (e.message || e));
+  });
+}
+
+function statusBadge(v){
+  var s = String(v || '').toLowerCase();
+  if (s === 'submitted') return '<span class="badge done">Submitted</span>';
+  return '<span class="badge pending">Pending</span>';
+}
+
+function renderOfficeRows(rows){
+  var body = document.getElementById('dashBody');
+  document.getElementById('dashCount').textContent = rows.length + ' record' + (rows.length === 1 ? '' : 's');
+
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="11">No entries found.</td></tr>';
+    return;
+  }
+
+  var role = STATE.user ? STATE.user.role : 'india';
+  var html = '';
+  rows.forEach(function(r, i){
+    var rid = esc(r['Record ID'] || '');
+    html += '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td><span class="code">' + rid + '</span></td>' +
+      '<td>' + esc(r['Booking By'] || '-') + '</td>' +
+      '<td>' + esc(r['Booking Date'] || '-') + '</td>' +
+      '<td>' + esc(r['Shipper Name'] || '-') + '</td>' +
+      '<td>' + esc(r['Consignee Name'] || '-') + '</td>' +
+      '<td>' + esc(r['Preferred Delivery Date'] || '-') + '</td>' +
+      '<td>' + statusBadge(r['India Status']) + '</td>' +
+      '<td>' + statusBadge(r['Sahib Khan Status']) + '</td>' +
+      '<td>' + statusBadge(r['CS Status']) + '</td>' +
+      '<td><button class="btn btn-ghost" onclick="openOfficeRecord(\'' + escA(r['Record ID'] || '') + '\')">Edit ' + esc(role.toUpperCase()) + '</button></td>' +
+      '</tr>';
+  });
+  body.innerHTML = html;
+}
+
+function openOfficeRecord(recordId){
+  STATE.recordId = String(recordId || '');
+  showPage('pgOfficeForm');
+  loadOfficeRecordAndRender(STATE.recordId);
+}
+
+function loadOfficeRecordAndRender(recordId){
+  var rid = String(recordId || '').trim();
+  if (!rid) {
+    alert('Missing record id.');
+    goBackDashboard();
+    return;
+  }
+
+  gloader(true, 'Loading record...');
+  scriptRun('getOfficeRecord', [rid], function(res){
+    gloader(false);
+    if (!res || !res.found) {
+      alert((res && res.error) ? res.error : 'Record not found.');
+      goBackDashboard();
+      return;
+    }
+    STATE.formData = res.data || {};
+    renderOfficeForm();
+  }, function(e){
+    gloader(false);
+    alert('Error: ' + (e.message || e));
+    goBackDashboard();
+  });
+}
+
+function normalizeDateInput(raw){
+  var s = String(raw || '').trim();
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) {
+    return m[3] + '-' + pad(parseInt(m[2],10)) + '-' + pad(parseInt(m[1],10));
+  }
+  var d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+
+function normalizeDateTimeInput(raw){
+  var s = String(raw || '').trim();
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) return s.slice(0, 16);
+  var d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function renderOfficeForm(){
+  var role = STATE.user ? STATE.user.role : '';
+  var cfg = OFFICE_CFG[role];
+  if (!cfg) {
+    alert('Invalid office role.');
+    goBackDashboard();
+    return;
+  }
+
+  var d = STATE.formData || {};
+  document.getElementById('ofTitle').textContent = cfg.title;
+  document.getElementById('ofSub').textContent = 'Record ID: ' + (d['Record ID'] || STATE.recordId || '');
+
+  document.getElementById('ofMeta').innerHTML =
+    '<div class="k">Booking By</div><div>' + esc(d['Booking By'] || '-') + '</div>' +
+    '<div class="k">Your Email Address</div><div>' + esc(d['Your Email Address'] || '-') + '</div>' +
+    '<div class="k">Booking Date</div><div>' + esc(d['Booking Date'] || '-') + '</div>' +
+    '<div class="k">Shipper Name</div><div>' + esc(d['Shipper Name'] || '-') + '</div>' +
+    '<div class="k">Consignee Name</div><div>' + esc(d['Consignee Name'] || '-') + '</div>' +
+    '<div class="k">Consignee Email ID</div><div>' + esc(d['Consignee Email ID'] || '-') + '</div>';
+
+  var html = '';
+  cfg.fields.forEach(function(f){
+    var id = 'of_' + f.k.replace(/[^a-zA-Z0-9]/g, '_');
+    var raw = String(d[f.k] || '');
+    var val = (f.t === 'date') ? normalizeDateInput(raw) : (f.t === 'datetime-local' ? normalizeDateTimeInput(raw) : raw);
+    var control = '';
+    if (f.t === 'select') {
+      control = '<select id="' + id + '"><option value="">Select</option>';
+      (f.opts || []).forEach(function(opt) {
+        control += '<option value="' + esc(opt) + '"' + (opt === val ? ' selected' : '') + '>' + esc(opt) + '</option>';
+      });
+      control += '</select>';
+    } else {
+      control = '<input type="' + f.t + '" id="' + id + '" value="' + esc(val) + '">';
+    }
+    html += '<div class="f">' +
+      '<label>' + esc(f.k) + (f.r ? ' <span class="req">*</span>' : '') + '</label>' +
+      control +
+      '</div>';
+  });
+  document.getElementById('ofFields').innerHTML = html;
+
+  var e = document.getElementById('ofErr');
+  e.classList.remove('show');
+  e.textContent = '';
+}
+
+function saveOfficeForm(){
+  var role = STATE.user ? STATE.user.role : '';
+  var cfg = OFFICE_CFG[role];
+  if (!cfg) return;
+
+  var fields = {};
+  var valid = true;
+  cfg.fields.forEach(function(f){
+    var id = 'of_' + f.k.replace(/[^a-zA-Z0-9]/g, '_');
+    var el = document.getElementById(id);
+    var v = el ? String(el.value || '').trim() : '';
+    fields[f.k] = v;
+    if (f.r && !v) valid = false;
+  });
+
+  var err = document.getElementById('ofErr');
+  err.classList.remove('show');
+  err.textContent = '';
+
+  if (!valid) {
+    err.textContent = 'Please fill all required fields.';
+    err.classList.add('show');
+    return;
+  }
+
+  var btn = document.getElementById('ofSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  scriptRun('saveOfficeSection', [{section: role, recordId: STATE.recordId, fields: fields}], function(res){
+    btn.disabled = false;
+    btn.textContent = 'Save Updates';
+
+    if (!res || !res.success) {
+      err.textContent = (res && res.error) ? res.error : 'Save failed.';
+      err.classList.add('show');
+      return;
+    }
+
+    alert('Update saved successfully for record ' + res.recordId + '.');
+    goBackDashboard();
+  }, function(e){
+    btn.disabled = false;
+    btn.textContent = 'Save Updates';
+    err.textContent = 'Error: ' + (e.message || e);
+    err.classList.add('show');
+  });
+}
+
+function goBackDashboard(){
+  showPage('pgOfficeDash');
+  renderUserChip();
+  loadOfficeDashboard();
+}
+
+function gloader(on, txt){
+  var el = document.getElementById('gloader');
+  if (on) {
+    document.getElementById('gloaderTxt').textContent = txt || 'Loading...';
+    el.classList.remove('hide');
+  } else {
+    el.classList.add('hide');
+  }
+}
+
+function esc(s){
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escA(s){
+  return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function pad(n){
+  return n < 10 ? '0' + n : String(n);
+}
+
+function scriptRun(fn, args, onOk, onErr){
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    var runner = google.script.run.withSuccessHandler(onOk).withFailureHandler(onErr || function(e){ alert(e.message || e); });
+    runner[fn].apply(runner, args || []);
+    return;
+  }
+
+  var apiUrl = String(window.WORKFLOW_API_URL || '').trim();
+  if (apiUrl) {
+    jsonpApi(apiUrl, fn, args || [], onOk, onErr);
+    return;
+  }
+
+  setTimeout(function(){
+    var DEMO = [{
+      'Record ID': 'BK-1001',
+      'Created At': '02/04/2026 10:30',
+      'Last Updated': '02/04/2026 10:30',
+      'Booking By': 'Demo User',
+      'Your Email Address': 'demo@example.com',
+      'Booking Date': '2026-04-02',
+      'Shipper Name': 'Shipper One',
+      'Shipper Email': 'shipper@example.com',
+      'Shipper Phone': '9999999999',
+      'Shipper Address': 'Delhi',
+      'Shipper KYC Type': 'Passport',
+      'Consignee Name': 'Consignee One',
+      'Consignee Email ID': 'consignee@example.com',
+      'Consignee Phone': '8888888888',
+      'Consignee Address': 'Toronto',
+      'Consignee KYC Type': 'Driving License',
+      'Preferred Delivery Date': '2026-04-05',
+      'Dispatch Date': '',
+      'MAWB No': '',
+      'India Status': 'Pending',
+      'Flight Date': '',
+      'Airline Type': '',
+      'Expected Arrival Date Time': '',
+      'Sahib Khan Status': 'Pending',
+      'Arrival Date': '',
+      'Custom Date': '',
+      'Dispatch To Consignee Date': '',
+      'CS Status': 'Pending'
+    }];
+
+    if (fn === 'submitPublicForm') {
+      onOk({success:true, recordId:'BK-' + Date.now(), emailSent:true, emailError:''});
+    } else if (fn === 'loginOffice') {
+      var em = String((args && args[0]) || '').toLowerCase();
+      var pw = String((args && args[1]) || '');
+      if (em === 'india@quickshipnow.com' && pw === 'india123') {
+        onOk({success:true, user:{email:em, role:'india', name:'India Office'}});
+      } else if (em === 'sahib@quickshipnow.com' && pw === 'sahib123') {
+        onOk({success:true, user:{email:em, role:'sahib', name:'Sahib Khan'}});
+      } else if (em === 'cs@quickshipnow.com' && pw === 'cs123') {
+        onOk({success:true, user:{email:em, role:'cs', name:'CS Team'}});
+      } else {
+        onOk({success:false, error:'Invalid office login credentials.'});
+      }
+    } else if (fn === 'getOfficeDashboard') {
+      onOk({success:true, rows:DEMO});
+    } else if (fn === 'getOfficeRecord') {
+      onOk({found:true, data:DEMO[0]});
+    } else if (fn === 'saveOfficeSection') {
+      onOk({success:true, recordId:(args && args[0] && args[0].recordId) || 'BK-1001'});
+    }
+  }, 300);
+}
+
+function jsonpApi(apiUrl, fn, args, onOk, onErr) {
+  var cb = 'workflowApiCb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+  var sep = apiUrl.indexOf('?') === -1 ? '?' : '&';
+  var src = apiUrl + sep +
+    'action=' + encodeURIComponent(fn) +
+    '&args=' + encodeURIComponent(JSON.stringify(args || [])) +
+    '&callback=' + encodeURIComponent(cb);
+  var script = document.createElement('script');
+  var timer = setTimeout(function(){
+    cleanup();
+    if (onErr) onErr(new Error('API request timed out.'));
+  }, 20000);
+
+  function cleanup(){
+    clearTimeout(timer);
+    try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+    if (script.parentNode) script.parentNode.removeChild(script);
+  }
+
+  window[cb] = function(res){
+    cleanup();
+    onOk(res);
+  };
+
+  script.onerror = function(){
+    cleanup();
+    if (onErr) onErr(new Error('Unable to reach the Apps Script API.'));
+  };
+
+  script.src = src;
+  document.head.appendChild(script);
+}
+</script>
+</body>
+</html>
