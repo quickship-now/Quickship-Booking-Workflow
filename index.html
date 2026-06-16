@@ -31,6 +31,7 @@ body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#1c67d5;color:#e5
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .f{display:flex;flex-direction:column;gap:5px}
 .f label{font-size:12px;color:#cbd5e1}
+.f .hint{font-size:11px;color:#94a3b8;line-height:1.35}
 .f input,.f select,.f textarea{width:100%;padding:9px 10px;border:1px solid #334155;border-radius:8px;background:#020617;color:#e5e7eb;font:inherit}
 .f textarea{min-height:72px;resize:vertical}
 .req{color:#fca5a5}
@@ -69,37 +70,32 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
   <div class="wrap">
     <div class="card">
       <h2 class="title">Customer and Canada Office Form</h2>
-      <p class="sub" style="margin-bottom:14px">No login required. On submit, details will be sent to Your Email Address.</p>
+      <p class="sub" style="margin-bottom:14px">No login required. On submit, details will be sent to Customer Email ID.</p>
       <div id="pubErr" class="err"></div>
       <div id="pubOk" class="ok"></div>
 
       <div class="grid">
-        <div class="f"><label>Booking By <span class="req">*</span></label><input id="pf_Booking_By" type="text"></div>
-        <div class="f"><label>Your Email Address <span class="req">*</span></label><input id="pf_Your_Email_Address" type="email"></div>
-        <div class="f"><label>Booking Date <span class="req">*</span></label><input id="pf_Booking_Date" type="date"></div>
-        <div class="f"><label>Shipper Name <span class="req">*</span></label><input id="pf_Shipper_Name" type="text"></div>
-        <div class="f"><label>Shipper Email <span class="req">*</span></label><input id="pf_Shipper_Email" type="email"></div>
-        <div class="f"><label>Shipper Phone <span class="req">*</span></label><input id="pf_Shipper_Phone" type="text"></div>
-        <div class="f"><label>Shipper Address <span class="req">*</span></label><textarea id="pf_Shipper_Address"></textarea></div>
-        <div class="f"><label>Shipper KYC Type <span class="req">*</span></label>
-          <select id="pf_Shipper_KYC_Type">
+        <div class="f"><label>Q1 Pickup Type <span class="req">*</span></label>
+          <select id="pf_Pickup_Type">
             <option value="">Select</option>
-            <option value="Passport">Passport</option>
-            <option value="Driving License">Driving License</option>
+            <option value="Import Into Canada">Import Into Canada</option>
+            <option value="Export From Canada">Export From Canada</option>
+            <option value="Domestic">Domestic</option>
           </select>
         </div>
-        <div class="f"><label>Consignee Name <span class="req">*</span></label><input id="pf_Consignee_Name" type="text"></div>
-        <div class="f"><label>Consignee Email ID <span class="req">*</span></label><input id="pf_Consignee_Email_ID" type="email"></div>
-        <div class="f"><label>Consignee Phone <span class="req">*</span></label><input id="pf_Consignee_Phone" type="text"></div>
-        <div class="f"><label>Consignee Address <span class="req">*</span></label><textarea id="pf_Consignee_Address"></textarea></div>
-        <div class="f"><label>Consignee KYC Type <span class="req">*</span></label>
-          <select id="pf_Consignee_KYC_Type">
-            <option value="">Select</option>
-            <option value="Passport">Passport</option>
-            <option value="Driving License">Driving License</option>
-          </select>
-        </div>
-        <div class="f"><label>Preferred Delivery Date <span class="req">*</span></label><input id="pf_Preferred_Delivery_Date" type="date"></div>
+        <div class="f"><label>Q2 Billing Party Name</label><input id="pf_Billing_Party_Name" type="text"></div>
+        <div class="f"><label>Q3 Customer Name</label><input id="pf_Customer_Name" type="text"></div>
+        <div class="f"><label>Q4 Shipper Phone No <span class="req">*</span></label><input id="pf_Shipper_Phone_No" type="text"></div>
+        <div class="f"><label>Q5 Consignee Phone No <span class="req">*</span></label><input id="pf_Consignee_Phone_No" type="text"></div>
+        <div class="f"><label>Q6 Delivery Address <span class="req">*</span></label><div class="hint">Please provide the complete delivery address with zip code.</div><textarea id="pf_Delivery_Address"></textarea></div>
+        <div class="f"><label>Q7 Pickup Address <span class="req">*</span></label><div class="hint">Please provide the complete pickup address with zip code.</div><textarea id="pf_Pickup_Address"></textarea></div>
+        <div class="f"><label>Q8 Customer Phone Number <span class="req">*</span></label><input id="pf_Customer_Phone_Number" type="text"></div>
+        <div class="f"><label>Q9 Customer Email ID <span class="req">*</span></label><input id="pf_Customer_Email_ID" type="email"></div>
+        <div class="f"><label>Q10 Weight (in KG)</label><input id="pf_Weight_in_KG" type="number" min="0" step="0.01"></div>
+        <div class="f"><label>Q11 Boxes (in Number)</label><input id="pf_Boxes_in_Number" type="number" min="0" step="1"></div>
+        <div class="f"><label>Q12 Item/Package Description</label><textarea id="pf_Item_Package_Description"></textarea></div>
+        <div class="f"><label>Q13 Preferred Pickup Date <span class="req">*</span></label><input id="pf_Preferred_Pickup_Date" type="date"></div>
+        <div class="f"><label>Q14 Special Instructions <span class="req">*</span></label><textarea id="pf_Special_Instructions"></textarea></div>
       </div>
 
       <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
@@ -152,11 +148,11 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
             <tr>
               <th>#</th>
               <th>Record ID</th>
-              <th>Booking By</th>
-              <th>Booking Date</th>
-              <th>Shipper</th>
-              <th>Consignee</th>
-              <th>Preferred Delivery Date</th>
+              <th>Pickup Type</th>
+              <th>Customer</th>
+              <th>Customer Email</th>
+              <th>Customer Phone</th>
+              <th>Preferred Pickup Date</th>
               <th>India Status</th>
               <th>Approver Status</th>
               <th>CS Status</th>
@@ -206,20 +202,20 @@ try {
 }
 
 var PUBLIC_FIELDS = [
-  'Booking By',
-  'Your Email Address',
-  'Booking Date',
-  'Shipper Name',
-  'Shipper Email',
-  'Shipper Phone',
-  'Shipper Address',
-  'Shipper KYC Type',
-  'Consignee Name',
-  'Consignee Email ID',
-  'Consignee Phone',
-  'Consignee Address',
-  'Consignee KYC Type',
-  'Preferred Delivery Date'
+  'Pickup Type',
+  'Billing Party Name',
+  'Customer Name',
+  'Shipper Phone No',
+  'Consignee Phone No',
+  'Delivery Address',
+  'Pickup Address',
+  'Customer Phone Number',
+  'Customer Email ID',
+  'Weight in KG',
+  'Boxes in Number',
+  'Item Package Description',
+  'Preferred Pickup Date',
+  'Special Instructions'
 ];
 
 var OFFICE_CFG = {
@@ -354,7 +350,7 @@ function submitPublicFormUI(){
 
     var ok = document.getElementById('pubOk');
     var note = 'Form submitted successfully. Record ID: ' + res.recordId + '.';
-    if (res.emailSent) note += ' Email sent to Your Email Address.';
+    if (res.emailSent) note += ' Email sent to Customer Email ID.';
     else if (res.emailError) note += ' Entry saved, but email failed: ' + res.emailError;
     ok.textContent = note;
     ok.classList.add('show');
@@ -465,11 +461,11 @@ function renderOfficeRows(rows){
     html += '<tr>' +
       '<td>' + (i + 1) + '</td>' +
       '<td><span class="code">' + rid + '</span></td>' +
-      '<td>' + esc(r['Booking By'] || '-') + '</td>' +
-      '<td>' + esc(r['Booking Date'] || '-') + '</td>' +
-      '<td>' + esc(r['Shipper Name'] || '-') + '</td>' +
-      '<td>' + esc(r['Consignee Name'] || '-') + '</td>' +
-      '<td>' + esc(r['Preferred Delivery Date'] || '-') + '</td>' +
+      '<td>' + esc(r['Pickup Type'] || '-') + '</td>' +
+      '<td>' + esc(r['Customer Name'] || '-') + '</td>' +
+      '<td>' + esc(r['Customer Email ID'] || '-') + '</td>' +
+      '<td>' + esc(r['Customer Phone Number'] || '-') + '</td>' +
+      '<td>' + esc(r['Preferred Pickup Date'] || '-') + '</td>' +
       '<td>' + statusBadge(r['India Status']) + '</td>' +
       '<td>' + statusBadge(r['Approver Status']) + '</td>' +
       '<td>' + statusBadge(r['CS Status']) + '</td>' +
@@ -546,12 +542,12 @@ function renderOfficeForm(){
   document.getElementById('ofSub').textContent = 'Record ID: ' + (d['Record ID'] || STATE.recordId || '');
 
   document.getElementById('ofMeta').innerHTML =
-    '<div class="k">Booking By</div><div>' + esc(d['Booking By'] || '-') + '</div>' +
-    '<div class="k">Your Email Address</div><div>' + esc(d['Your Email Address'] || '-') + '</div>' +
-    '<div class="k">Booking Date</div><div>' + esc(d['Booking Date'] || '-') + '</div>' +
-    '<div class="k">Shipper Name</div><div>' + esc(d['Shipper Name'] || '-') + '</div>' +
-    '<div class="k">Consignee Name</div><div>' + esc(d['Consignee Name'] || '-') + '</div>' +
-    '<div class="k">Consignee Email ID</div><div>' + esc(d['Consignee Email ID'] || '-') + '</div>';
+    '<div class="k">Pickup Type</div><div>' + esc(d['Pickup Type'] || '-') + '</div>' +
+    '<div class="k">Billing Party Name</div><div>' + esc(d['Billing Party Name'] || '-') + '</div>' +
+    '<div class="k">Customer Name</div><div>' + esc(d['Customer Name'] || '-') + '</div>' +
+    '<div class="k">Customer Email ID</div><div>' + esc(d['Customer Email ID'] || '-') + '</div>' +
+    '<div class="k">Customer Phone Number</div><div>' + esc(d['Customer Phone Number'] || '-') + '</div>' +
+    '<div class="k">Preferred Pickup Date</div><div>' + esc(d['Preferred Pickup Date'] || '-') + '</div>';
 
   var html = '';
   cfg.fields.forEach(function(f){
@@ -679,20 +675,20 @@ function scriptRun(fn, args, onOk, onErr){
       'Record ID': 'BK-1001',
       'Created At': '02/04/2026 10:30',
       'Last Updated': '02/04/2026 10:30',
-      'Booking By': 'Demo User',
-      'Your Email Address': 'demo@example.com',
-      'Booking Date': '2026-04-02',
-      'Shipper Name': 'Shipper One',
-      'Shipper Email': 'shipper@example.com',
-      'Shipper Phone': '9999999999',
-      'Shipper Address': 'Delhi',
-      'Shipper KYC Type': 'Passport',
-      'Consignee Name': 'Consignee One',
-      'Consignee Email ID': 'consignee@example.com',
-      'Consignee Phone': '8888888888',
-      'Consignee Address': 'Toronto',
-      'Consignee KYC Type': 'Driving License',
-      'Preferred Delivery Date': '2026-04-05',
+      'Pickup Type': 'Import Into Canada',
+      'Billing Party Name': 'Demo Billing Party',
+      'Customer Name': 'Demo Customer',
+      'Shipper Phone No': '9999999999',
+      'Consignee Phone No': '8888888888',
+      'Delivery Address': 'Toronto, ON M5V 2T6',
+      'Pickup Address': 'Mississauga, ON L5B 3C1',
+      'Customer Phone Number': '7777777777',
+      'Customer Email ID': 'demo@example.com',
+      'Weight in KG': '12.5',
+      'Boxes in Number': '2',
+      'Item Package Description': 'Demo package',
+      'Preferred Pickup Date': '2026-04-05',
+      'Special Instructions': 'Handle with care',
       'Dispatch Date': '',
       'MAWB No': '',
       'Assigned By Hemlata': '',
