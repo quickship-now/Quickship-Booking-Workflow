@@ -117,7 +117,7 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
   </header>
   <div class="wrap" style="max-width:520px">
     <div class="card">
-      <h2 class="title">India Office / Sahib Khan / CS Team Login</h2>
+      <h2 class="title">India Office / Approver / CS Team Login</h2>
       <p class="sub" style="margin-bottom:14px">Use office credentials to update existing entries.</p>
       <div id="loginErr" class="err"></div>
       <div class="f"><label>Email</label><input id="loginEmail" type="email"></div>
@@ -158,7 +158,7 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
               <th>Consignee</th>
               <th>Preferred Delivery Date</th>
               <th>India Status</th>
-              <th>Sahib Khan Status</th>
+              <th>Approver Status</th>
               <th>CS Status</th>
               <th>Action</th>
             </tr>
@@ -227,15 +227,19 @@ var OFFICE_CFG = {
     title: 'India Office Update',
     fields: [
       {k: 'Dispatch Date', t: 'date', r: true},
-      {k: 'MAWB No', t: 'text', r: true}
-    ]
-  },
-  sahib: {
-    title: 'Sahib Khan Update',
-    fields: [
+      {k: 'MAWB No', t: 'text', r: true},
+      {k: 'Assigned By Hemlata', t: 'select', r: true, opts: ['Yes', 'No']},
       {k: 'Flight Date', t: 'date', r: true},
       {k: 'Airline Type', t: 'select', r: true, opts: ['Air India', 'Qatar Airways', 'Etihad', 'Air Canada', 'Other']},
       {k: 'Expected Arrival Date Time', t: 'datetime-local', r: true}
+    ]
+  },
+  approver: {
+    title: 'Approver Update',
+    fields: [
+      {k: 'Approved By', t: 'text', r: true},
+      {k: 'Approver Phone No', t: 'text', r: true},
+      {k: 'Approver Email', t: 'email', r: true}
     ]
   },
   cs: {
@@ -260,6 +264,11 @@ window.addEventListener('load', function(){
   try {
     var u = sessionStorage.getItem('workflowUser');
     if (u) STATE.user = JSON.parse(u);
+    if (STATE.user && STATE.user.role === 'sahib') {
+      STATE.user.role = 'approver';
+      STATE.user.name = STATE.user.name || 'Approver';
+      sessionStorage.setItem('workflowUser', JSON.stringify(STATE.user));
+    }
   } catch (e) {}
 
   if (STATE.user) {
@@ -462,7 +471,7 @@ function renderOfficeRows(rows){
       '<td>' + esc(r['Consignee Name'] || '-') + '</td>' +
       '<td>' + esc(r['Preferred Delivery Date'] || '-') + '</td>' +
       '<td>' + statusBadge(r['India Status']) + '</td>' +
-      '<td>' + statusBadge(r['Sahib Khan Status']) + '</td>' +
+      '<td>' + statusBadge(r['Approver Status']) + '</td>' +
       '<td>' + statusBadge(r['CS Status']) + '</td>' +
       '<td><button class="btn btn-ghost" onclick="openOfficeRecord(\'' + escA(r['Record ID'] || '') + '\')">Edit ' + esc(role.toUpperCase()) + '</button></td>' +
       '</tr>';
@@ -686,11 +695,15 @@ function scriptRun(fn, args, onOk, onErr){
       'Preferred Delivery Date': '2026-04-05',
       'Dispatch Date': '',
       'MAWB No': '',
-      'India Status': 'Pending',
+      'Assigned By Hemlata': '',
       'Flight Date': '',
       'Airline Type': '',
       'Expected Arrival Date Time': '',
-      'Sahib Khan Status': 'Pending',
+      'India Status': 'Pending',
+      'Approved By': '',
+      'Approver Phone No': '',
+      'Approver Email': '',
+      'Approver Status': 'Pending',
       'Arrival Date': '',
       'Custom Date': '',
       'Dispatch To Consignee Date': '',
@@ -705,7 +718,9 @@ function scriptRun(fn, args, onOk, onErr){
       if (em === 'india@quickshipnow.com' && pw === 'india123') {
         onOk({success:true, user:{email:em, role:'india', name:'India Office'}});
       } else if (em === 'sahib@quickshipnow.com' && pw === 'sahib123') {
-        onOk({success:true, user:{email:em, role:'sahib', name:'Sahib Khan'}});
+        onOk({success:true, user:{email:em, role:'approver', name:'Approver'}});
+      } else if (em === 'approver@quickshipnow.com' && pw === 'approver123') {
+        onOk({success:true, user:{email:em, role:'approver', name:'Approver'}});
       } else if (em === 'cs@quickshipnow.com' && pw === 'cs123') {
         onOk({success:true, user:{email:em, role:'cs', name:'CS Team'}});
       } else {
