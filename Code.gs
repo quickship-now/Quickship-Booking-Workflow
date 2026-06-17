@@ -7,17 +7,15 @@ var BOOKING_HEADERS = [
   "Shipper Phone No", "Consignee Phone No", "Delivery Address", "Pickup Address",
   "Customer Phone Number", "Customer Email ID", "Weight in KG", "Boxes in Number",
   "Item Package Description", "Preferred Pickup Date", "Special Instructions",
-  "Dispatch Date", "MAWB No", "Assigned By Hemlata", "Flight Date", "Airline Type", "Expected Arrival Date Time", "India Status",
   "Approved By", "Approver Phone No", "Approver Email", "Approver Status",
-  "Arrival Date", "Custom Date", "Dispatch To Consignee Date", "CS Status"
+  "Pickup Date", "Dispatch Date", "Actual Weight", "MAWB No", "India Status"
 ];
 
 var USER_HEADERS = ["Email", "Password", "Role", "Name"];
 var DEFAULT_USERS = [
   ["india@quickshipnow.com", "india123", "india", "India Office"],
   ["sahib@quickshipnow.com", "sahib123", "approver", "Approver"],
-  ["approver@quickshipnow.com", "approver123", "approver", "Approver"],
-  ["cs@quickshipnow.com", "cs123", "cs", "CS Team"]
+  ["approver@quickshipnow.com", "approver123", "approver", "Approver"]
 ];
 
 function doGet(e) {
@@ -113,7 +111,7 @@ function loginOffice(email, password) {
       var rowPass = String(rows[i][1] || "").trim();
       var role = String(rows[i][2] || "").trim().toLowerCase();
       if (role === "sahib") role = "approver";
-      if (rowEmail === em && rowPass === pass && (role === "india" || role === "approver" || role === "cs")) {
+      if (rowEmail === em && rowPass === pass && (role === "india" || role === "approver")) {
         return {
           success: true,
           user: {
@@ -167,9 +165,8 @@ function submitPublicForm(fields) {
       }
     });
 
-    row[bci("India Status")] = "Pending";
     row[bci("Approver Status")] = "Pending";
-    row[bci("CS Status")] = "Pending";
+    row[bci("India Status")] = "Pending";
 
     sh.appendRow(row);
 
@@ -237,7 +234,7 @@ function saveOfficeSection(payload) {
     var fields = payload.fields || {};
 
     if (section === "sahib") section = "approver";
-    if (section !== "india" && section !== "approver" && section !== "cs") {
+    if (section !== "india" && section !== "approver") {
       return { success: false, error: "Invalid section." };
     }
     if (!rid) {
@@ -251,23 +248,16 @@ function saveOfficeSection(payload) {
     }
 
     if (section === "india") {
+      sh.getRange(rowNum, bci("Pickup Date") + 1).setValue(String(fields["Pickup Date"] || "").trim());
       sh.getRange(rowNum, bci("Dispatch Date") + 1).setValue(String(fields["Dispatch Date"] || "").trim());
+      sh.getRange(rowNum, bci("Actual Weight") + 1).setValue(String(fields["Actual Weight"] || "").trim());
       sh.getRange(rowNum, bci("MAWB No") + 1).setValue(String(fields["MAWB No"] || "").trim());
-      sh.getRange(rowNum, bci("Assigned By Hemlata") + 1).setValue(String(fields["Assigned By Hemlata"] || "").trim());
-      sh.getRange(rowNum, bci("Flight Date") + 1).setValue(String(fields["Flight Date"] || "").trim());
-      sh.getRange(rowNum, bci("Airline Type") + 1).setValue(String(fields["Airline Type"] || "").trim());
-      sh.getRange(rowNum, bci("Expected Arrival Date Time") + 1).setValue(String(fields["Expected Arrival Date Time"] || "").trim());
       sh.getRange(rowNum, bci("India Status") + 1).setValue("Submitted");
     } else if (section === "approver") {
       sh.getRange(rowNum, bci("Approved By") + 1).setValue(String(fields["Approved By"] || "").trim());
       sh.getRange(rowNum, bci("Approver Phone No") + 1).setValue(String(fields["Approver Phone No"] || "").trim());
       sh.getRange(rowNum, bci("Approver Email") + 1).setValue(String(fields["Approver Email"] || "").trim());
       sh.getRange(rowNum, bci("Approver Status") + 1).setValue("Submitted");
-    } else {
-      sh.getRange(rowNum, bci("Arrival Date") + 1).setValue(String(fields["Arrival Date"] || "").trim());
-      sh.getRange(rowNum, bci("Custom Date") + 1).setValue(String(fields["Custom Date"] || "").trim());
-      sh.getRange(rowNum, bci("Dispatch To Consignee Date") + 1).setValue(String(fields["Dispatch To Consignee Date"] || "").trim());
-      sh.getRange(rowNum, bci("CS Status") + 1).setValue("Submitted");
     }
 
     sh.getRange(rowNum, bci("Last Updated") + 1).setValue(formatNow_());
@@ -381,6 +371,8 @@ function syncBookingHeaders_(sh) {
     "Delivery Address": ["Consignee Address"],
     "Pickup Address": ["Shipper Address"],
     "Preferred Pickup Date": ["Preferred Delivery Date", "Booking Date"],
+    "Pickup Date": ["Flight Date", "Preferred Pickup Date"],
+    "Actual Weight": ["Weight in KG"],
     "Approver Status": ["Sahib Khan Status"]
   };
   for (var r = 1; r < data.length; r++) {
