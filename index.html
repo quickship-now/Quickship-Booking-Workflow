@@ -34,6 +34,31 @@ body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#1c67d5;color:#e5
 .f .hint{font-size:11px;color:#94a3b8;line-height:1.35}
 .f input,.f select,.f textarea{width:100%;padding:9px 10px;border:1px solid #334155;border-radius:8px;background:#020617;color:#e5e7eb;font:inherit}
 .f textarea{min-height:72px;resize:vertical}
+.public-page{background:#eef4fb;color:#172033}
+.public-page .topbar{background:#ffffff;border-bottom:1px solid #d9e2ef;box-shadow:0 1px 12px rgba(15,23,42,.06)}
+.public-page .brand{letter-spacing:.2px}
+.public-wrap{max-width:1040px;padding:22px 16px 34px}
+.public-card{background:#ffffff;color:#172033;border:1px solid #d9e2ef;border-radius:18px;padding:0;box-shadow:0 18px 48px rgba(15,23,42,.12);overflow:hidden}
+.public-head{background:linear-gradient(135deg,#0b3f86 0%,#0f766e 100%);padding:22px 24px;color:#ffffff}
+.public-head .title{color:#ffffff;font-size:24px;margin:0 0 7px}
+.public-head .sub{color:#dbeafe;max-width:680px}
+.form-content{padding:22px 24px 24px}
+.form-section{border-top:1px solid #e5edf6;padding-top:18px;margin-top:18px}
+.form-section:first-child{border-top:0;padding-top:0;margin-top:0}
+.section-title{margin:0 0 12px;color:#0f172a;font-size:15px;font-weight:800}
+.public-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.public-grid .full{grid-column:1 / -1}
+.public-card .f{gap:6px}
+.public-card .f label{color:#334155;font-size:12px;font-weight:700}
+.public-card .f .hint{color:#64748b}
+.public-card .f input,.public-card .f select,.public-card .f textarea{background:#f8fafc;color:#0f172a;border:1px solid #cbd5e1;border-radius:10px;min-height:42px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.public-card .f textarea{min-height:96px}
+.public-card .f input:focus,.public-card .f select:focus,.public-card .f textarea:focus{outline:3px solid rgba(14,165,233,.18);border-color:#0ea5e9;background:#ffffff}
+.public-card .req{color:#dc2626}
+.public-actions{margin-top:20px;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;border-top:1px solid #e5edf6;padding-top:18px}
+.public-actions .btn{min-height:42px}
+.public-actions .btn-primary{background:#0f766e;color:#ffffff}
+.public-actions .btn-ghost{background:#e2e8f0;color:#0f172a}
 .req{color:#fca5a5}
 .tbl-wrap{overflow:auto;border:1px solid #334155;border-radius:10px}
 table{width:100%;border-collapse:collapse;min-width:980px;background:#020617}
@@ -53,54 +78,93 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
 .kv .k{color:#94a3b8}
 @media (max-width:900px){
   .grid{grid-template-columns:1fr}
+  .public-grid{grid-template-columns:1fr}
   .kv{grid-template-columns:1fr}
+  .public-head{padding:20px}
+  .form-content{padding:18px}
+  .public-actions{justify-content:stretch}
+  .public-actions .btn{flex:1 1 150px}
+}
+@media (max-width:520px){
+  .topbar{height:auto;min-height:58px;gap:10px;align-items:flex-start;flex-direction:column;padding:12px 14px}
+  .actions{width:100%;justify-content:flex-start;flex-wrap:wrap}
+  .public-wrap{padding:14px 10px 24px}
+  .public-card{border-radius:14px}
+  .public-head .title{font-size:21px;line-height:1.2}
+  .form-content{padding:16px 14px}
+  .public-card .f input,.public-card .f select,.public-card .f textarea{font-size:16px}
 }
 </style>
 </head>
 <body>
 <div id="gloader" class="loader hide"><div class="loader-card"><div id="gloaderTxt">Loading...</div></div></div>
 
-<div id="pgPublic" class="page">
+<div id="pgPublic" class="page public-page">
   <header class="topbar">
     <div class="brand">Quickship Booking Workflow</div>
     <div class="actions">
       <button class="btn btn-outline" onclick="openOfficeLogin()">Office Login</button>
     </div>
   </header>
-  <div class="wrap">
-    <div class="card">
-      <h2 class="title">Customer and Canada Office Form</h2>
-      <p class="sub" style="margin-bottom:14px">No login required. On submit, details will be sent to Customer Email ID.</p>
-      <div id="pubErr" class="err"></div>
-      <div id="pubOk" class="ok"></div>
-
-      <div class="grid">
-        <div class="f"><label>Pickup Type <span class="req">*</span></label>
-          <select id="pf_Pickup_Type">
-            <option value="">Select</option>
-            <option value="Import Into Canada">Import Into Canada</option>
-            <option value="Export From Canada">Export From Canada</option>
-            <option value="Domestic">Domestic</option>
-          </select>
-        </div>
-        <div class="f"><label>Billing Party Name</label><input id="pf_Billing_Party_Name" type="text"></div>
-        <div class="f"><label>Customer Name</label><input id="pf_Customer_Name" type="text"></div>
-        <div class="f"><label>Shipper Phone No <span class="req">*</span></label><input id="pf_Shipper_Phone_No" type="text"></div>
-        <div class="f"><label>Consignee Phone No <span class="req">*</span></label><input id="pf_Consignee_Phone_No" type="text"></div>
-         <div class="f"><label>Customer Phone Number <span class="req">*</span></label><input id="pf_Customer_Phone_Number" type="text"></div> 
-        <div class="f"><label>Delivery Address <span class="req">*</span></label><div class="hint">Please provide the complete delivery address with zip code.</div><textarea id="pf_Delivery_Address"></textarea></div>
-        <div class="f"><label>Pickup Address <span class="req">*</span></label><div class="hint">Please provide the complete pickup address with zip code.</div><textarea id="pf_Pickup_Address"></textarea></div>
-        <div class="f"><label>Customer Email ID <span class="req">*</span></label><input id="pf_Customer_Email_ID" type="email"></div>
-        <div class="f"><label>Weight (in KG)</label><input id="pf_Weight_in_KG" type="number" min="0" step="0.01"></div>
-        <div class="f"><label>Boxes (in Number)</label><input id="pf_Boxes_in_Number" type="number" min="0" step="1"></div>
-        <div class="f"><label>Item/Package Description</label><textarea id="pf_Item_Package_Description"></textarea></div>
-        <div class="f"><label></label>Preferred Pickup Date <span class="req">*</span></label><input id="pf_Preferred_Pickup_Date" type="date"></div>
-        <div class="f"><label>Special Instructions <span class="req">*</span></label><textarea id="pf_Special_Instructions"></textarea></div>
+  <div class="wrap public-wrap">
+    <div class="card public-card">
+      <div class="public-head">
+        <h2 class="title">Customer and Canada Office Form</h2>
+        <p class="sub">No login required. On submit, details will be sent to Customer Email ID.</p>
       </div>
+      <div class="form-content">
+        <div id="pubErr" class="err"></div>
+        <div id="pubOk" class="ok"></div>
 
-      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <div class="form-section">
+          <h3 class="section-title">Service Details</h3>
+          <div class="public-grid">
+            <div class="f"><label>Q1 Pickup Type <span class="req">*</span></label>
+              <select id="pf_Pickup_Type">
+                <option value="">Select</option>
+                <option value="Import Into Canada">Import Into Canada</option>
+                <option value="Export From Canada">Export From Canada</option>
+                <option value="Domestic">Domestic</option>
+              </select>
+            </div>
+            <div class="f"><label>Q2 Billing Party Name</label><input id="pf_Billing_Party_Name" type="text"></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Customer Contact</h3>
+          <div class="public-grid">
+            <div class="f"><label>Q3 Customer Name</label><input id="pf_Customer_Name" type="text"></div>
+            <div class="f"><label>Q8 Customer Phone Number <span class="req">*</span></label><input id="pf_Customer_Phone_Number" type="text"></div>
+            <div class="f"><label>Q9 Customer Email ID <span class="req">*</span></label><input id="pf_Customer_Email_ID" type="email"></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Pickup And Delivery</h3>
+          <div class="public-grid">
+            <div class="f"><label>Q4 Shipper Phone No <span class="req">*</span></label><input id="pf_Shipper_Phone_No" type="text"></div>
+            <div class="f"><label>Q5 Consignee Phone No <span class="req">*</span></label><input id="pf_Consignee_Phone_No" type="text"></div>
+            <div class="f full"><label>Q6 Delivery Address <span class="req">*</span></label><div class="hint">Please provide the complete delivery address with zip code.</div><textarea id="pf_Delivery_Address"></textarea></div>
+            <div class="f full"><label>Q7 Pickup Address <span class="req">*</span></label><div class="hint">Please provide the complete pickup address with zip code.</div><textarea id="pf_Pickup_Address"></textarea></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Package And Schedule</h3>
+          <div class="public-grid">
+            <div class="f"><label>Q10 Weight (in KG)</label><input id="pf_Weight_in_KG" type="number" min="0" step="0.01"></div>
+            <div class="f"><label>Q11 Boxes (in Number)</label><input id="pf_Boxes_in_Number" type="number" min="0" step="1"></div>
+            <div class="f full"><label>Q12 Item/Package Description</label><textarea id="pf_Item_Package_Description"></textarea></div>
+            <div class="f"><label>Q13 Preferred Pickup Date <span class="req">*</span></label><input id="pf_Preferred_Pickup_Date" type="date"></div>
+            <div class="f full"><label>Q14 Special Instructions <span class="req">*</span></label><textarea id="pf_Special_Instructions"></textarea></div>
+          </div>
+        </div>
+
+      <div class="public-actions">
         <button class="btn btn-primary" id="pubSubmitBtn" onclick="submitPublicFormUI()">Submit Form</button>
         <button class="btn btn-ghost" onclick="resetPublicForm()">Reset</button>
+      </div>
       </div>
     </div>
   </div>
@@ -113,7 +177,7 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
   </header>
   <div class="wrap" style="max-width:520px">
     <div class="card">
-      <h2 class="title">India Office / Approver / CS Team Login</h2>
+      <h2 class="title">Approver / India Office Login</h2>
       <p class="sub" style="margin-bottom:14px">Use office credentials to update existing entries.</p>
       <div id="loginErr" class="err"></div>
       <div class="f"><label>Email</label><input id="loginEmail" type="email"></div>
@@ -153,13 +217,12 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
               <th>Customer Email</th>
               <th>Customer Phone</th>
               <th>Preferred Pickup Date</th>
-              <th>India Status</th>
               <th>Approver Status</th>
-              <th>CS Status</th>
+              <th>India Status</th>
               <th>Action</th>
             </tr>
           </thead>
-          <tbody id="dashBody"><tr><td colspan="11">Loading...</td></tr></tbody>
+          <tbody id="dashBody"><tr><td colspan="10">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -222,12 +285,10 @@ var OFFICE_CFG = {
   india: {
     title: 'India Office Update',
     fields: [
+      {k: 'Pickup Date', t: 'date', r: true},
       {k: 'Dispatch Date', t: 'date', r: true},
-      {k: 'MAWB No', t: 'text', r: true},
-      {k: 'Assigned By Hemlata', t: 'select', r: true, opts: ['Yes', 'No']},
-      {k: 'Flight Date', t: 'date', r: true},
-      {k: 'Airline Type', t: 'select', r: true, opts: ['Air India', 'Qatar Airways', 'Etihad', 'Air Canada', 'Other']},
-      {k: 'Expected Arrival Date Time', t: 'datetime-local', r: true}
+      {k: 'Actual Weight', t: 'number', r: true},
+      {k: 'MAWB No', t: 'text', r: true}
     ]
   },
   approver: {
@@ -238,14 +299,6 @@ var OFFICE_CFG = {
       {k: 'Approver Email', t: 'email', r: true}
     ]
   },
-  cs: {
-    title: 'CS Team Update',
-    fields: [
-      {k: 'Arrival Date', t: 'date', r: true},
-      {k: 'Custom Date', t: 'date', r: true},
-      {k: 'Dispatch To Consignee Date', t: 'date', r: true}
-    ]
-  }
 };
 
 var STATE = {
@@ -264,6 +317,10 @@ window.addEventListener('load', function(){
       STATE.user.role = 'approver';
       STATE.user.name = STATE.user.name || 'Approver';
       sessionStorage.setItem('workflowUser', JSON.stringify(STATE.user));
+    }
+    if (STATE.user && STATE.user.role === 'cs') {
+      STATE.user = null;
+      sessionStorage.removeItem('workflowUser');
     }
   } catch (e) {}
 
@@ -450,7 +507,7 @@ function renderOfficeRows(rows){
   document.getElementById('dashCount').textContent = rows.length + ' record' + (rows.length === 1 ? '' : 's');
 
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="11">No entries found.</td></tr>';
+    body.innerHTML = '<tr><td colspan="10">No entries found.</td></tr>';
     return;
   }
 
@@ -466,9 +523,8 @@ function renderOfficeRows(rows){
       '<td>' + esc(r['Customer Email ID'] || '-') + '</td>' +
       '<td>' + esc(r['Customer Phone Number'] || '-') + '</td>' +
       '<td>' + esc(r['Preferred Pickup Date'] || '-') + '</td>' +
-      '<td>' + statusBadge(r['India Status']) + '</td>' +
       '<td>' + statusBadge(r['Approver Status']) + '</td>' +
-      '<td>' + statusBadge(r['CS Status']) + '</td>' +
+      '<td>' + statusBadge(r['India Status']) + '</td>' +
       '<td><button class="btn btn-ghost" onclick="openOfficeRecord(\'' + escA(r['Record ID'] || '') + '\')">Edit ' + esc(role.toUpperCase()) + '</button></td>' +
       '</tr>';
   });
@@ -689,21 +745,15 @@ function scriptRun(fn, args, onOk, onErr){
       'Item Package Description': 'Demo package',
       'Preferred Pickup Date': '2026-04-05',
       'Special Instructions': 'Handle with care',
-      'Dispatch Date': '',
-      'MAWB No': '',
-      'Assigned By Hemlata': '',
-      'Flight Date': '',
-      'Airline Type': '',
-      'Expected Arrival Date Time': '',
-      'India Status': 'Pending',
       'Approved By': '',
       'Approver Phone No': '',
       'Approver Email': '',
       'Approver Status': 'Pending',
-      'Arrival Date': '',
-      'Custom Date': '',
-      'Dispatch To Consignee Date': '',
-      'CS Status': 'Pending'
+      'Pickup Date': '',
+      'Dispatch Date': '',
+      'Actual Weight': '',
+      'MAWB No': '',
+      'India Status': 'Pending'
     }];
 
     if (fn === 'submitPublicForm') {
@@ -717,8 +767,6 @@ function scriptRun(fn, args, onOk, onErr){
         onOk({success:true, user:{email:em, role:'approver', name:'Approver'}});
       } else if (em === 'approver@quickshipnow.com' && pw === 'approver123') {
         onOk({success:true, user:{email:em, role:'approver', name:'Approver'}});
-      } else if (em === 'cs@quickshipnow.com' && pw === 'cs123') {
-        onOk({success:true, user:{email:em, role:'cs', name:'CS Team'}});
       } else {
         onOk({success:false, error:'Invalid office login credentials.'});
       }
