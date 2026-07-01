@@ -1,5 +1,7 @@
 var BOOKING_SHEET = "WorkflowBookings";
 var USERS_SHEET = "WorkflowUsers";
+var SUBMISSION_COPY_EMAIL = "info@inext360.com";
+var WORKFLOW_WEBSITE_URL = "https://quickship-now.github.io/Quickship-Booking-Workflow/";
 
 var BOOKING_HEADERS = [
   "Record ID", "Created At", "Last Updated",
@@ -304,6 +306,7 @@ function sendSubmissionEmail_(fields, recordId, submittedAt) {
     "",
     "Record ID: " + recordId,
     "Submitted At: " + submittedAt,
+    "Website: " + WORKFLOW_WEBSITE_URL,
     "",
     "Form Details:",
     "Pickup Type: " + String(fields["Pickup Type"] || ""),
@@ -324,7 +327,8 @@ function sendSubmissionEmail_(fields, recordId, submittedAt) {
 
   try {
     MailApp.sendEmail({
-      to: to,
+      to: SUBMISSION_COPY_EMAIL,
+      cc: SUBMISSION_COPY_EMAIL,
       subject: subject,
       body: lines.join("\n"),
       name: "Quickship Booking Workflow"
