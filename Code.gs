@@ -8,6 +8,7 @@ var BOOKING_HEADERS = [
   "Customer Phone Number", "Customer Email ID", "Weight in KG", "Boxes in Number",
   "Item Package Description", "Preferred Pickup Date", "Special Instructions",
   "Approved By", "Approver Phone No", "Approver Email", "Approver Status",
+  "Pickup Assign To", "Assign Date", "Assignee Mail ID", "Pickup Assign Status",
   "Pickup Date", "Dispatch Date", "Actual Weight", "MAWB No", "India Status"
 ];
 
@@ -15,15 +16,12 @@ var USER_HEADERS = ["Email", "Password", "Role", "Name"];
 var DEFAULT_USERS = [
   ["india@quickshipnow.com", "india123", "india", "India Office"],
   ["sahib@quickshipnow.com", "sahib123", "approver", "Approver"],
-  ["approver@quickshipnow.com", "approver123", "approver", "Approver"]
+  ["approver@quickshipnow.com", "approver123", "approver", "Approver"],
+  ["pickup@quickshipnow.com", "pickup123", "pickup", "Pickup Assign"]
 ];
 
 function doGet(e) {
   var params = (e && e.parameter) ? e.parameter : {};
-  if (params.action) {
-    return handleApiGet_(params);
-  }
-
   var page = String(params.page || "public").toLowerCase();
   var recordId = String(params.recordId || "").trim();
   var validPages = ["public", "login", "dashboard", "form"];
@@ -35,68 +33,17 @@ function doGet(e) {
     if (rec && rec.found) recordData = rec.data;
   }
 
-  try {
-    var tmpl = HtmlService.createTemplateFromFile("Index");
-    tmpl.APP_INIT_JSON = JSON.stringify({
-      page: page,
-      recordId: recordId,
-      data: recordData
-    });
+  var tmpl = HtmlService.createTemplateFromFile("Index");
+  tmpl.APP_INIT_JSON = JSON.stringify({
+    page: page,
+    recordId: recordId,
+    data: recordData
+  });
 
-    return tmpl.evaluate()
-      .setTitle("Quickship Booking Workflow")
-      .addMetaTag("viewport", "width=device-width,initial-scale=1")
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-  } catch (err) {
-    return ContentService
-      .createTextOutput("Quickship Booking Workflow API is running.")
-      .setMimeType(ContentService.MimeType.TEXT);
-  }
-}
-
-function handleApiGet_(params) {
-  var callback = String(params.callback || "").trim();
-  var action = String(params.action || "").trim();
-  var args = [];
-
-  try {
-    if (params.args) {
-      args = JSON.parse(String(params.args));
-      if (!Array.isArray(args)) args = [];
-    }
-
-    var result;
-    if (action === "submitPublicForm") {
-      result = submitPublicForm(args[0] || {});
-    } else if (action === "loginOffice") {
-      result = loginOffice(args[0] || "", args[1] || "");
-    } else if (action === "getOfficeDashboard") {
-      result = getOfficeDashboard();
-    } else if (action === "getOfficeRecord") {
-      result = getOfficeRecord(args[0] || "");
-    } else if (action === "saveOfficeSection") {
-      result = saveOfficeSection(args[0] || {});
-    } else {
-      result = { success: false, error: "Unknown API action." };
-    }
-
-    return apiResponse_(result, callback);
-  } catch (err) {
-    return apiResponse_({ success: false, error: err.message }, callback);
-  }
-}
-
-function apiResponse_(payload, callback) {
-  var json = JSON.stringify(payload || {});
-  if (callback && /^[a-zA-Z_$][0-9a-zA-Z_$]*(\.[a-zA-Z_$][0-9a-zA-Z_$]*)*$/.test(callback)) {
-    return ContentService
-      .createTextOutput(callback + "(" + json + ");")
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
-  }
-
-  return ContentService
-    .createTextOutput(json)
-    .setMimeType(ContentService.MimeType.JSON);
+  return tmpl.evaluate()
+    .setTitle("Quickship Booking Workflow")
+    .addMetaTag("viewport", "width=device-width,initial-scale=1")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function loginOffice(email, password) {
@@ -111,7 +58,7 @@ function loginOffice(email, password) {
       var rowPass = String(rows[i][1] || "").trim();
       var role = String(rows[i][2] || "").trim().toLowerCase();
       if (role === "sahib") role = "approver";
-      if (rowEmail === em && rowPass === pass && (role === "india" || role === "approver")) {
+      if (rowEmail === em && rowPass === pass && (role === "india" || role === "approver" || role === "pickup")) {
         return {
           success: true,
           user: {
@@ -166,6 +113,7 @@ function submitPublicForm(fields) {
     });
 
     row[bci("Approver Status")] = "Pending";
+    row[bci("Pickup Assign Status")] = "Pending";
     row[bci("India Status")] = "Pending";
 
     sh.appendRow(row);
@@ -234,7 +182,7 @@ function saveOfficeSection(payload) {
     var fields = payload.fields || {};
 
     if (section === "sahib") section = "approver";
-    if (section !== "india" && section !== "approver") {
+    if (section !== "india" && section !== "approver" && section !== "pickup") {
       return { success: false, error: "Invalid section." };
     }
     if (!rid) {
@@ -258,6 +206,11 @@ function saveOfficeSection(payload) {
       sh.getRange(rowNum, bci("Approver Phone No") + 1).setValue(String(fields["Approver Phone No"] || "").trim());
       sh.getRange(rowNum, bci("Approver Email") + 1).setValue(String(fields["Approver Email"] || "").trim());
       sh.getRange(rowNum, bci("Approver Status") + 1).setValue("Submitted");
+    } else if (section === "pickup") {
+      sh.getRange(rowNum, bci("Pickup Assign To") + 1).setValue(String(fields["Pickup Assign To"] || "").trim());
+      sh.getRange(rowNum, bci("Assign Date") + 1).setValue(String(fields["Assign Date"] || "").trim());
+      sh.getRange(rowNum, bci("Assignee Mail ID") + 1).setValue(String(fields["Assignee Mail ID"] || "").trim());
+      sh.getRange(rowNum, bci("Pickup Assign Status") + 1).setValue("Submitted");
     }
 
     sh.getRange(rowNum, bci("Last Updated") + 1).setValue(formatNow_());
