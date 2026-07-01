@@ -22,6 +22,10 @@ var DEFAULT_USERS = [
 
 function doGet(e) {
   var params = (e && e.parameter) ? e.parameter : {};
+  if (params.action) {
+    return handleApiGet_(params);
+  }
+
   var page = String(params.page || "public").toLowerCase();
   var recordId = String(params.recordId || "").trim();
   var validPages = ["public", "login", "dashboard", "form"];
@@ -33,17 +37,68 @@ function doGet(e) {
     if (rec && rec.found) recordData = rec.data;
   }
 
-  var tmpl = HtmlService.createTemplateFromFile("Index");
-  tmpl.APP_INIT_JSON = JSON.stringify({
-    page: page,
-    recordId: recordId,
-    data: recordData
-  });
+  try {
+    var tmpl = HtmlService.createTemplateFromFile("Index");
+    tmpl.APP_INIT_JSON = JSON.stringify({
+      page: page,
+      recordId: recordId,
+      data: recordData
+    });
 
-  return tmpl.evaluate()
-    .setTitle("Quickship Booking Workflow")
-    .addMetaTag("viewport", "width=device-width,initial-scale=1")
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    return tmpl.evaluate()
+      .setTitle("Quickship Booking Workflow")
+      .addMetaTag("viewport", "width=device-width,initial-scale=1")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } catch (err) {
+    return ContentService
+      .createTextOutput("Quickship Booking Workflow API is running.")
+      .setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+
+function handleApiGet_(params) {
+  var callback = String(params.callback || "").trim();
+  var action = String(params.action || "").trim();
+  var args = [];
+
+  try {
+    if (params.args) {
+      args = JSON.parse(String(params.args));
+      if (!Array.isArray(args)) args = [];
+    }
+
+    var result;
+    if (action === "submitPublicForm") {
+      result = submitPublicForm(args[0] || {});
+    } else if (action === "loginOffice") {
+      result = loginOffice(args[0] || "", args[1] || "");
+    } else if (action === "getOfficeDashboard") {
+      result = getOfficeDashboard();
+    } else if (action === "getOfficeRecord") {
+      result = getOfficeRecord(args[0] || "");
+    } else if (action === "saveOfficeSection") {
+      result = saveOfficeSection(args[0] || {});
+    } else {
+      result = { success: false, error: "Unknown API action." };
+    }
+
+    return apiResponse_(result, callback);
+  } catch (err) {
+    return apiResponse_({ success: false, error: err.message }, callback);
+  }
+}
+
+function apiResponse_(payload, callback) {
+  var json = JSON.stringify(payload || {});
+  if (callback && /^[a-zA-Z_$][0-9a-zA-Z_$]*(\.[a-zA-Z_$][0-9a-zA-Z_$]*)*$/.test(callback)) {
+    return ContentService
+      .createTextOutput(callback + "(" + json + ");")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  return ContentService
+    .createTextOutput(json)
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function loginOffice(email, password) {
@@ -69,6 +124,24 @@ function loginOffice(email, password) {
         };
       }
     }
+
+    for (var d = 0; d < DEFAULT_USERS.length; d++) {
+      var defaultEmail = String(DEFAULT_USERS[d][0] || "").trim().toLowerCase();
+      var defaultPass = String(DEFAULT_USERS[d][1] || "").trim();
+      var defaultRole = String(DEFAULT_USERS[d][2] || "").trim().toLowerCase();
+      if (defaultRole === "sahib") defaultRole = "approver";
+      if (defaultEmail === em && defaultPass === pass && (defaultRole === "india" || defaultRole === "approver" || defaultRole === "pickup")) {
+        return {
+          success: true,
+          user: {
+            email: DEFAULT_USERS[d][0],
+            role: defaultRole,
+            name: DEFAULT_USERS[d][3] || defaultRole.toUpperCase()
+          }
+        };
+      }
+    }
+
     return { success: false, error: "Invalid office login credentials." };
   } catch (err) {
     return { success: false, error: err.message };
