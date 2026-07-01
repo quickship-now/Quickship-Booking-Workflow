@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quickship Booking Workflow</title>
+<script>
+window.WORKFLOW_API_URL = "";
+</script>
+<script src="config.js"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#1c67d5;color:#e5e7eb}
@@ -251,7 +255,12 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
 <script>
 var _INIT = {};
 try {
-  _INIT = JSON.parse('<?= APP_INIT_JSON ?>');
+  var _params = new URLSearchParams(window.location.search);
+  _INIT = {
+    page: _params.get('page') || 'public',
+    recordId: _params.get('recordId') || '',
+    data: {}
+  };
 } catch (e) {
   _INIT = { page: 'public', recordId: '', data: {} };
 }
@@ -722,6 +731,12 @@ function scriptRun(fn, args, onOk, onErr){
     return;
   }
 
+  var apiUrl = String(window.WORKFLOW_API_URL || '').trim();
+  if (apiUrl) {
+    jsonpApi(apiUrl, fn, args || [], onOk, onErr);
+    return;
+  }
+
   setTimeout(function(){
     var DEMO = [{
       'Record ID': 'BK-1001',
@@ -780,6 +795,39 @@ function scriptRun(fn, args, onOk, onErr){
       onOk({success:true, recordId:(args && args[0] && args[0].recordId) || 'BK-1001'});
     }
   }, 300);
+}
+
+function jsonpApi(apiUrl, fn, args, onOk, onErr) {
+  var cb = 'workflowApiCb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+  var sep = apiUrl.indexOf('?') === -1 ? '?' : '&';
+  var src = apiUrl + sep +
+    'action=' + encodeURIComponent(fn) +
+    '&args=' + encodeURIComponent(JSON.stringify(args || [])) +
+    '&callback=' + encodeURIComponent(cb);
+  var script = document.createElement('script');
+  var timer = setTimeout(function(){
+    cleanup();
+    if (onErr) onErr(new Error('API request timed out.'));
+  }, 20000);
+
+  function cleanup(){
+    clearTimeout(timer);
+    try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+    if (script.parentNode) script.parentNode.removeChild(script);
+  }
+
+  window[cb] = function(res){
+    cleanup();
+    onOk(res);
+  };
+
+  script.onerror = function(){
+    cleanup();
+    if (onErr) onErr(new Error('Unable to reach the Apps Script API.'));
+  };
+
+  script.src = src;
+  document.head.appendChild(script);
 }
 </script>
 </body>
