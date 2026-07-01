@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quickship Booking Workflow</title>
-<script>
-window.WORKFLOW_API_URL = "";
-</script>
-<script src="config.js"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#1c67d5;color:#e5e7eb}
@@ -177,7 +173,7 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
   </header>
   <div class="wrap" style="max-width:520px">
     <div class="card">
-      <h2 class="title">Approver / India Office Login</h2>
+      <h2 class="title">Approver / Pickup Assign / India Office Login</h2>
       <p class="sub" style="margin-bottom:14px">Use office credentials to update existing entries.</p>
       <div id="loginErr" class="err"></div>
       <div class="f"><label>Email</label><input id="loginEmail" type="email"></div>
@@ -218,11 +214,12 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
               <th>Customer Phone</th>
               <th>Preferred Pickup Date</th>
               <th>Approver Status</th>
+              <th>Pickup Assign Status</th>
               <th>India Status</th>
               <th>Action</th>
             </tr>
           </thead>
-          <tbody id="dashBody"><tr><td colspan="10">Loading...</td></tr></tbody>
+          <tbody id="dashBody"><tr><td colspan="11">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -254,12 +251,7 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
 <script>
 var _INIT = {};
 try {
-  var _params = new URLSearchParams(window.location.search);
-  _INIT = {
-    page: _params.get('page') || 'public',
-    recordId: _params.get('recordId') || '',
-    data: {}
-  };
+  _INIT = JSON.parse('<?= APP_INIT_JSON ?>');
 } catch (e) {
   _INIT = { page: 'public', recordId: '', data: {} };
 }
@@ -297,6 +289,14 @@ var OFFICE_CFG = {
       {k: 'Approved By', t: 'text', r: true},
       {k: 'Approver Phone No', t: 'text', r: true},
       {k: 'Approver Email', t: 'email', r: true}
+    ]
+  },
+  pickup: {
+    title: 'Pickup Assign Update',
+    fields: [
+      {k: 'Pickup Assign To', t: 'text', r: true},
+      {k: 'Assign Date', t: 'date', r: true},
+      {k: 'Assignee Mail ID', t: 'email', r: true}
     ]
   },
 };
@@ -474,9 +474,10 @@ function doOfficeLogout(){
 
 function renderUserChip(){
   var u = STATE.user || {name: 'Office', role: ''};
+  var displayName = u.name || String(u.role || 'Office').toUpperCase();
   document.getElementById('uAv').textContent = String(u.name || 'O').charAt(0).toUpperCase();
   document.getElementById('uName').textContent = (u.name || 'Office') + ' (' + String(u.role || '').toUpperCase() + ')';
-  document.getElementById('dashTitle').textContent = String(u.role || '').toUpperCase() + ' Office Dashboard';
+  document.getElementById('dashTitle').textContent = displayName + ' Dashboard';
   document.getElementById('dashSub').textContent = 'Update and edit existing booking entries.';
 }
 
@@ -507,7 +508,7 @@ function renderOfficeRows(rows){
   document.getElementById('dashCount').textContent = rows.length + ' record' + (rows.length === 1 ? '' : 's');
 
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="10">No entries found.</td></tr>';
+    body.innerHTML = '<tr><td colspan="11">No entries found.</td></tr>';
     return;
   }
 
@@ -524,6 +525,7 @@ function renderOfficeRows(rows){
       '<td>' + esc(r['Customer Phone Number'] || '-') + '</td>' +
       '<td>' + esc(r['Preferred Pickup Date'] || '-') + '</td>' +
       '<td>' + statusBadge(r['Approver Status']) + '</td>' +
+      '<td>' + statusBadge(r['Pickup Assign Status']) + '</td>' +
       '<td>' + statusBadge(r['India Status']) + '</td>' +
       '<td><button class="btn btn-ghost" onclick="openOfficeRecord(\'' + escA(r['Record ID'] || '') + '\')">Edit ' + esc(role.toUpperCase()) + '</button></td>' +
       '</tr>';
@@ -720,12 +722,6 @@ function scriptRun(fn, args, onOk, onErr){
     return;
   }
 
-  var apiUrl = String(window.WORKFLOW_API_URL || '').trim();
-  if (apiUrl) {
-    jsonpApi(apiUrl, fn, args || [], onOk, onErr);
-    return;
-  }
-
   setTimeout(function(){
     var DEMO = [{
       'Record ID': 'BK-1001',
@@ -749,6 +745,10 @@ function scriptRun(fn, args, onOk, onErr){
       'Approver Phone No': '',
       'Approver Email': '',
       'Approver Status': 'Pending',
+      'Pickup Assign To': '',
+      'Assign Date': '',
+      'Assignee Mail ID': '',
+      'Pickup Assign Status': 'Pending',
       'Pickup Date': '',
       'Dispatch Date': '',
       'Actual Weight': '',
@@ -767,6 +767,8 @@ function scriptRun(fn, args, onOk, onErr){
         onOk({success:true, user:{email:em, role:'approver', name:'Approver'}});
       } else if (em === 'approver@quickshipnow.com' && pw === 'approver123') {
         onOk({success:true, user:{email:em, role:'approver', name:'Approver'}});
+      } else if (em === 'pickup@quickshipnow.com' && pw === 'pickup123') {
+        onOk({success:true, user:{email:em, role:'pickup', name:'Pickup Assign'}});
       } else {
         onOk({success:false, error:'Invalid office login credentials.'});
       }
@@ -778,39 +780,6 @@ function scriptRun(fn, args, onOk, onErr){
       onOk({success:true, recordId:(args && args[0] && args[0].recordId) || 'BK-1001'});
     }
   }, 300);
-}
-
-function jsonpApi(apiUrl, fn, args, onOk, onErr) {
-  var cb = 'workflowApiCb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-  var sep = apiUrl.indexOf('?') === -1 ? '?' : '&';
-  var src = apiUrl + sep +
-    'action=' + encodeURIComponent(fn) +
-    '&args=' + encodeURIComponent(JSON.stringify(args || [])) +
-    '&callback=' + encodeURIComponent(cb);
-  var script = document.createElement('script');
-  var timer = setTimeout(function(){
-    cleanup();
-    if (onErr) onErr(new Error('API request timed out.'));
-  }, 20000);
-
-  function cleanup(){
-    clearTimeout(timer);
-    try { delete window[cb]; } catch (e) { window[cb] = undefined; }
-    if (script.parentNode) script.parentNode.removeChild(script);
-  }
-
-  window[cb] = function(res){
-    cleanup();
-    onOk(res);
-  };
-
-  script.onerror = function(){
-    cleanup();
-    if (onErr) onErr(new Error('Unable to reach the Apps Script API.'));
-  };
-
-  script.src = src;
-  document.head.appendChild(script);
 }
 </script>
 </body>
