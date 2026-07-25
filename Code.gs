@@ -1,6 +1,6 @@
 var BOOKING_SHEET = "WorkflowBookings";
 var USERS_SHEET = "WorkflowUsers";
-var SUBMISSION_COPY_EMAIL = "info@inext360.com,support9@quickshipnow.com";
+var SUBMISSION_COPY_EMAIL = "info@inext360.com,support9@quickshipnow.com,mahi.l@quickshipnow.com,vikash@quickshipnow.com";
 var WORKFLOW_WEBSITE_URL = "https://quickship-now.github.io/Quickship-Booking-Workflow/";
 
 var BOOKING_HEADERS = [
