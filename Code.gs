@@ -1,10 +1,11 @@
 var BOOKING_SHEET = "WorkflowBookings";
 var USERS_SHEET = "WorkflowUsers";
-var SUBMISSION_COPY_EMAIL = "info@inext360.com,support9@quickshipnow.com,mahi.l@quickshipnow.com,vikash@quickshipnow.com";
+var SUBMISSION_COPY_EMAIL = "info@inext360.com,support9@quickshipnow.com,mahi.l@quickshipnow.com,vikash@quickshipnow.com,ankush.rana@inextlogistics.com";
 var WORKFLOW_WEBSITE_URL = "https://quickship-now.github.io/Quickship-Booking-Workflow/";
 
 var BOOKING_HEADERS = [
   "Record ID", "Created At", "Last Updated",
+  "Booking Person Name",
   "Pickup Type", "Billing Party Name", "Customer Name",
   "Shipper Phone No", "Consignee Phone No", "Delivery Address", "Pickup Address",
   "Customer Phone Number", "Customer Email ID", "Weight in KG", "Boxes in Number",
@@ -309,7 +310,9 @@ function sendSubmissionEmail_(fields, recordId, submittedAt) {
     "Website: " + WORKFLOW_WEBSITE_URL,
     "",
     "Form Details:",
+    "Booking Person Name: " + String(fields["Booking Person Name"] || ""),
     "Pickup Type: " + String(fields["Pickup Type"] || ""),
+    "Pickup Assign To: " + String(fields["Pickup Assign To"] || ""),
     "Billing Party Name: " + String(fields["Billing Party Name"] || ""),
     "Customer Name: " + String(fields["Customer Name"] || ""),
     "Shipper Phone No: " + String(fields["Shipper Phone No"] || ""),
