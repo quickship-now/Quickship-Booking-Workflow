@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quickship Booking Workflow</title>
 <script>
-window.WORKFLOW_API_URL = "https://script.google.com/macros/s/AKfycby_FmN9fc4BLpNe_zwpe5wiFEoE81TS4Sk0_XCXCWVJE3J3X5WB9D38EQ1odJvIe1VCJg/exec";
+window.WORKFLOW_API_URL = "https://script.google.com/macros/s/AKfycbyiTueRYlfqdfDXftPvl8t745vzO34uyP95xEWtKM773dsy8EHJYK4POo1bvqP3ldFMKg/exec";
 </script>
 <script src="config.js"></script>
 <style>
@@ -119,6 +119,7 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
         <div class="form-section">
           <h3 class="section-title">Service Details</h3>
           <div class="public-grid">
+            <div class="f"><label>Booking Person Name</label><input id="pf_Booking_Person_Name" type="text"></div>
             <div class="f"><label>Q1 Pickup Type <span class="req">*</span></label>
               <select id="pf_Pickup_Type">
                 <option value="">Select</option>
@@ -144,6 +145,13 @@ tbody td{font-size:13px;color:#e2e8f0;padding:9px;border-bottom:1px solid #1e293
           <h3 class="section-title">Pickup And Delivery</h3>
           <div class="public-grid">
             <div class="f"><label>Q4 Shipper Phone No <span class="req">*</span></label><input id="pf_Shipper_Phone_No" type="text"></div>
+            <div class="f"><label>Pickup Assign To</label>
+              <select id="pf_Pickup_Assign_To">
+                <option value="">Select</option>
+                <option value="Vikash">Vikash</option>
+                <option value="Ankush Rana">Ankush Rana</option>
+              </select>
+            </div>
             <div class="f"><label>Q5 Consignee Phone No <span class="req">*</span></label><input id="pf_Consignee_Phone_No" type="text"></div>
             <div class="f full"><label>Q6 Delivery Address <span class="req">*</span></label><div class="hint">Please provide the complete delivery address with zip code.</div><textarea id="pf_Delivery_Address"></textarea></div>
             <div class="f full"><label>Q7 Pickup Address <span class="req">*</span></label><div class="hint">Please provide the complete pickup address with zip code.</div><textarea id="pf_Pickup_Address"></textarea></div>
@@ -266,10 +274,12 @@ try {
 }
 
 var PUBLIC_FIELDS = [
+  'Booking Person Name',
   'Pickup Type',
   'Billing Party Name',
   'Customer Name',
   'Shipper Phone No',
+  'Pickup Assign To',
   'Consignee Phone No',
   'Delivery Address',
   'Pickup Address',
@@ -609,11 +619,13 @@ function renderOfficeForm(){
   document.getElementById('ofSub').textContent = 'Record ID: ' + (d['Record ID'] || STATE.recordId || '');
 
   document.getElementById('ofMeta').innerHTML =
+    '<div class="k">Booking Person Name</div><div>' + esc(d['Booking Person Name'] || '-') + '</div>' +
     '<div class="k">Pickup Type</div><div>' + esc(d['Pickup Type'] || '-') + '</div>' +
     '<div class="k">Billing Party Name</div><div>' + esc(d['Billing Party Name'] || '-') + '</div>' +
     '<div class="k">Customer Name</div><div>' + esc(d['Customer Name'] || '-') + '</div>' +
     '<div class="k">Customer Email ID</div><div>' + esc(d['Customer Email ID'] || '-') + '</div>' +
     '<div class="k">Customer Phone Number</div><div>' + esc(d['Customer Phone Number'] || '-') + '</div>' +
+    '<div class="k">Pickup Assign To</div><div>' + esc(d['Pickup Assign To'] || '-') + '</div>' +
     '<div class="k">Preferred Pickup Date</div><div>' + esc(d['Preferred Pickup Date'] || '-') + '</div>';
 
   var html = '';
@@ -742,6 +754,7 @@ function scriptRun(fn, args, onOk, onErr){
       'Record ID': 'BK-1001',
       'Created At': '02/04/2026 10:30',
       'Last Updated': '02/04/2026 10:30',
+      'Booking Person Name': 'Demo Booking Person',
       'Pickup Type': 'Import Into Canada',
       'Billing Party Name': 'Demo Billing Party',
       'Customer Name': 'Demo Customer',
