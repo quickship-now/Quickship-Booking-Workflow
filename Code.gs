@@ -41,7 +41,7 @@ function doGet(e) {
   }
 
   try {
-    var tmpl = HtmlService.createTemplateFromFile("Index");
+    var tmpl = HtmlService.createTemplateFromFile("index");
     tmpl.APP_INIT_JSON = JSON.stringify({
       page: page,
       recordId: recordId,
